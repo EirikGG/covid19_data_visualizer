@@ -41,11 +41,6 @@ class Data_Handler():
         '''Returns a deepcopy of paths dict'''
         return copy.deepcopy(self.paths)
 
-    def do_get_dict(self, x, y):
-        '''Returns a dictionary with x and y keys who corresponds to x and y parameter'''
-        return dict(x=x, y=y)
-
-
 class Regional_Data(Data_Handler):
     '''Sorts data into regions'''
     reg_data = None                 # Holds dataset sorted into regions as groupby object
@@ -55,8 +50,7 @@ class Regional_Data(Data_Handler):
         self.reg_data = super().get_grouped_data(("continent"))
 
     def get_total_cases(self):
-        sum_by_cont = self.reg_data.sum()
-        return super().do_get_dict(x=sum_by_cont.index, y=sum_by_cont["new_cases"])
+        return self.reg_data.sum()
         
 if __name__ == "__main__":
     rd = Regional_Data()
