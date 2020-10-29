@@ -2,34 +2,32 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.express as px
+#import plotly.graph_objs as go
 import pandas as pd
 
-#external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+from covid_data import Regional_Data
 
-app = dash.Dash(__name__)#, external_stylesheets=external_stylesheets)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-# assume you have a "long-form" data frame
-# see https://plotly.com/python/px-arguments/ for more options
-df = pd.DataFrame({
-        "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-            "Amount": [4, 1, 2, 2, 4, 5],
-                "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-                })
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
+# Regional data
+reg_data = Regional_Data()
+co_da = reg_data.get_total_cases()
+fig = px.bar(x=co_da["x"], y=co_da["y"])
+fig2 = px.bar(x=co_da["x"], y=co_da["y"])
+
 
 app.layout = html.Div(children=[
-        html.H1(children='Hello Dash'),
-
-            html.Div(children='''
-                    Dash: A web application framework for Python.
-                        '''),
-
-                dcc.Graph(
-                            id='example-graph',
-                                    figure=fig
-                                        )
-                ])
+        html.H1(children='COVID-19 data'),
+        html.Details([
+                html.Summary("Regional data"),
+                html.Div(html.Div(children=[
+                        dcc.Graph(id='graph1', figure=fig, style={'display': 'inline-block'}), 
+                        dcc.Graph(id='graph2', figure=fig2, style={'display': 'inline-block'})
+                ]))
+        ])
+])
 
 if __name__ == '__main__':
         app.run_server(debug=True)
