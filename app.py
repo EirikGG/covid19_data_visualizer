@@ -24,7 +24,9 @@ texts = json.load(open("text_content.json"))
 
 # Importing and setting theme
 external_stylesheets = [dbc.themes.SLATE]
-app = dash.Dash(external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+server = app.server
 
 # Importing backends
 co_da = Covid_Data()
