@@ -29,7 +29,7 @@ class Covid_Data(object):
                 continue
         return res
 
-    def _do_load_urls(self, path="dataset_paths.json"):
+    def _do_load_urls(self, path="config/dataset_paths.json"):
         '''Loads json file from path parameter'''
         return json.load(open(path))
 

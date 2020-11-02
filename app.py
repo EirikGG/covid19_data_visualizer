@@ -14,7 +14,7 @@ def _format_array(arr):
 
 
 # Variable containg text used in website
-texts = json.load(open("text_content.json"))
+texts = json.load(open("config/text_content.json"))
 
 # Importing and setting theme
 external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -103,7 +103,10 @@ app.layout = html.Div(children=[
                         ], label="Regional data"),
                         dcc.Tab([
                                 
-                        ], label="Temperature data")
+                        ], label="Temperature data"),
+                        dcc.Tab([
+                                
+                        ], label="Educational data")
                 ]),
 
                 html.Br(),
