@@ -12,18 +12,12 @@ def _format_array(arr):
         '''Formats the array in array(dict(label: element), dict(label: element)). Used for dropdown menues'''
         return [{'label': item, 'value':item} for item in arr]
 
-def _update_fig(fig):
-        '''Updates layout for a figure'''
-        return fig.update_layout(template='plotly_dark', 
-                                plot_bgcolor='rgba(0, 0, 0, 0)', 
-                                paper_bgcolor= 'rgba(0, 0, 0, 0)')
-
 
 # Variable containg text used in website
 texts = json.load(open("text_content.json"))
 
 # Importing and setting theme
-external_stylesheets = [dbc.themes.SLATE]
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 server = app.server
@@ -62,9 +56,9 @@ le_pr_cont_pie = go.Figure(data=go.Pie(labels=reg_summed.index, values=reg_summe
 app.layout = html.Div(children=[
         dbc.Navbar([
                 dbc.Row([
-                        dbc.Col(html.H1("Covid-19 data"))
+                        dbc.Col(html.H1("Covid-19 data", style={"color":"#FFFFFF"}))
                 ])
-        ], color="dark"),
+        ], color="#404040", sticky="top"),
 
             
         dbc.Card(dbc.CardBody([
@@ -76,7 +70,7 @@ app.layout = html.Div(children=[
                                                         dbc.Card(
                                                                 dbc.CardBody([
                                                                         html.H3("Total cases and deaths by continents:"),
-                                                                        dcc.Graph(id='reg:comparison', figure=_update_fig(total_by_region))
+                                                                        dcc.Graph(id='reg:comparison', figure=total_by_region)
                                                                 ])
                                                         )
                                                 ]), width=7),
@@ -84,7 +78,7 @@ app.layout = html.Div(children=[
                                                         dbc.Card(
                                                                 dbc.CardBody([
                                                                         html.H3("Death comparison:"),
-                                                                        dcc.Graph(id='reg:deaths', figure=_update_fig(le_pr_cont_pie))
+                                                                        dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
                                                                 ])
                                                         )
                                                 ]), width=5)
@@ -110,9 +104,7 @@ app.layout = html.Div(children=[
                         dcc.Tab([
                                 
                         ], label="Temperature data")
-                ], colors={"primary":"dark",
-                        "background":"dark",
-                        "border":"black"}),
+                ]),
 
                 html.Br(),
                 dbc.Card(dbc.CardBody([
@@ -132,9 +124,9 @@ def update_locations(locations):
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases"]))
-        return _update_fig(go.Figure(data = data))
+        return go.Figure(data = data)
 
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=False)
+        app.run_server(debug=False, use_reloader=False)
