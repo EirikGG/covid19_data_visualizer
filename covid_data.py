@@ -51,6 +51,18 @@ class Regional_Data(Data_Handler):
 
     def get_total_cases(self):
         return self.reg_data.sum()
+
+class Location_Data(Data_Handler):
+    '''Sorts data into location'''
+    loc_data = None                 # Holds dataset sorted into locations as groupby object
+
+    def __init__(self):
+        super().__init__()
+        self.loc_data = super().get_grouped_data(("location"))
+
+    def get_location(self, location):
+        return self.loc_data.get_group(location)
         
 if __name__ == "__main__":
-    rd = Regional_Data()
+    ld = Location_Data()
+    print(ld.get_summed("Norway"))
