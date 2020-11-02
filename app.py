@@ -24,7 +24,7 @@ texts = json.load(open("text_content.json"))
 
 # Importing and setting theme
 external_stylesheets = [dbc.themes.SLATE]
-app = dash.Dash("Covid-19 data visualizer", external_stylesheets=external_stylesheets)
+app = dash.Dash(external_stylesheets=external_stylesheets)
 
 # Importing backends
 co_da = Covid_Data()
@@ -135,4 +135,4 @@ def update_locations(locations):
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=True, use_reloader=True)
+        app.run_server(debug=False)
