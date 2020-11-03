@@ -75,8 +75,8 @@ le_pr_cont_pie = go.Figure(data=go.Pie(labels=reg_summed.index, values=reg_summe
 
 # Temperature for norway
 total_by_region = go.Figure(data=(
-        go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases"]),
-        go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths"])))
+        go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"]),
+        go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths_per_million"])))
 
 
 
