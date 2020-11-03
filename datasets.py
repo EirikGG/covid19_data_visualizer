@@ -65,14 +65,15 @@ class Tmp_Data(Data_Handler):
     def __init__(self, url_key="tmp"):
         '''Poulates class fields with temperature data'''
         super().__init__(url_key)
-
+        
     def get_location(self, location):
         '''Returns the temparture data for a single location'''
-        row = self.data[self.data["Country/Region"]==location]
+        row = self.data[self.data["Country/Region"]==location]      # Sort one location
+        row = row.drop("Country/Region", 1)                         # Drops location column
+        row = row.set_index("weather_param").transpose()            # Set index to date and transposes
+        row.index = pd.to_datetime(row.index)                       # Parse index to datetime format
 
-        # Drops the location name set the temperature type as index and transpose
-        # which returns a df with parameter as column and date as index
-        return row.drop("Country/Region", 1).set_index("weather_param").transpose()
+        return row 
 
     def get_locations(self):
         '''Returns a column'''
@@ -81,15 +82,4 @@ class Tmp_Data(Data_Handler):
 if __name__ == "__main__":
     import numpy as np
 
-    cd = Covid_Data()
     td = Tmp_Data()
-
-    cdl = cd.get_locations()
-    tdl = td.get_locations()
-
-    cl = np.intersect1d(cdl, tdl)
-
-    print(cl)
-    print("td: {}, cd: {}, cl: {}".format(len(cdl), len(tdl), len(cl)))
-
-    print(td.get_location("Norway"))
