@@ -2,5 +2,9 @@
     "covid-19": [
         "https://covid.ourworldindata.org/data/owid-covid-data.csv",
         "datasets/owid-covid-data_2020-10-19.csv"
+    ],
+
+    "tmp": [
+        "datasets/weather_data_countries_covid19.csv"
     ]
 }
