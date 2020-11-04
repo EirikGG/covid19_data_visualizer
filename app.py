@@ -147,7 +147,7 @@ app.layout = html.Div(children=[
                                                 html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total cases for:"),
+                                                                        html.H3("Total cases for"),
                                                                         dcc.Dropdown(id='tmp:trend_dropdown', 
                                                                                 options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
                                                                                 value='Norway'),
@@ -207,8 +207,8 @@ def update_comp_tmp(location):
 
         return go.Figure(data = (dict(name="Humidity", x=tm_da_co.index, y=tm_da_co["humidity"]), 
                                 dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]),
-                                dict(name="Average", x=avg.index, y=avg[location]), 
-                                dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"])))
+                                dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"]), 
+                                dict(name="Average", x=avg.index, y=avg[location])))
 
 
 
@@ -218,4 +218,4 @@ def update_comp_tmp(location):
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=True, use_reloader=True)
+        app.run_server(debug=False, use_reloader=False)
