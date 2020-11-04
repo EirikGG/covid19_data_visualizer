@@ -122,7 +122,7 @@ app.layout = html.Div(children=[
                                                 html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total cases for:"),
+                                                                        html.H3("Total cases per million:"),
                                                                         dcc.Dropdown(id='loc:trend_dropdown', 
                                                                                 options=_format_array(co_da.get_locations()), 
                                                                                 value=['Norway', 'Sweden', 'Denmark'], 
@@ -190,7 +190,7 @@ def update_locations(locations):
         data = []
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
-                data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases"]))
+                data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
         return go.Figure(data = data)
 
 
