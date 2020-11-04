@@ -58,12 +58,10 @@ t_da = Tmp_Data()       # Temperature data
 reg_summed = co_da.get_summed_cont()
 
 # Total cases by region (bar chart)
-total_by_region = go.Figure(data=(
-        go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases"]),
-        go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths"])))
+total_by_region = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"])))
 
 # Calculate lethality prosentage for each continent (pie chart)
-le_pr_cont_pie = go.Figure(data=go.Pie(labels=reg_summed.index, values=reg_summed["new_deaths"]))
+le_pr_cont_pie = go.Figure(data=(go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths_per_million"], marker={'color':'#ff7f0e'})))
 
 
 
@@ -72,11 +70,6 @@ le_pr_cont_pie = go.Figure(data=go.Pie(labels=reg_summed.index, values=reg_summe
 
 
 #####################  TMP Figures  #######################
-
-# Temperature for norway
-total_by_region = go.Figure(data=(
-        go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"]),
-        go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths_per_million"])))
 
 
 
@@ -108,7 +101,7 @@ app.layout = html.Div(children=[
                                         dbc.Col(html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total cases and deaths by continents:"),
+                                                                        html.H3("Total cases per million"),
                                                                         dcc.Graph(id='reg:comparison', figure=total_by_region)
                                                                 ])
                                                         )
@@ -116,7 +109,7 @@ app.layout = html.Div(children=[
                                         dbc.Col(html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Death comparison:"),
+                                                                        html.H3("Total deaths per million"),
                                                                         dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
                                                                 ])
                                                         )
@@ -210,9 +203,11 @@ def update_comp_tmp(location):
         '''Updates trend graph with one or several location trends'''
         
         tm_da_co  = t_da.get_location(location)         # Tmp data for a single location
+        avg = t_da.get_loc_group()
 
         return go.Figure(data = (dict(name="Humidity", x=tm_da_co.index, y=tm_da_co["humidity"]), 
-                                dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]), 
+                                dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]),
+                                dict(name="Average", x=avg.index, y=avg[location]), 
                                 dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"])))
 
 
@@ -223,4 +218,4 @@ def update_comp_tmp(location):
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=False, use_reloader=False)
+        app.run_server(debug=True, use_reloader=True)

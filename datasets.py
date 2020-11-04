@@ -72,14 +72,31 @@ class Tmp_Data(Data_Handler):
         row = row.drop("Country/Region", 1)                         # Drops location column
         row = row.set_index("weather_param").transpose()            # Set index to date and transposes
         row.index = pd.to_datetime(row.index)                       # Parse index to datetime format
-
-        return row 
+        return row
 
     def get_locations(self):
         '''Returns a column'''
         return self.data["Country/Region"].unique()
+    
+    def get_loc_group(self):
+        avg = pd.DataFrame(columns=self.data.columns[2:], index=self.get_locations())            # New dataframe with average tmp for each country
+        group_loc = self.data.groupby("Country/Region")
+        for country in avg.index:
+            group = group_loc.get_group(country)
+
+            maxT = group[group["weather_param"]=="maxtempC"].drop(["Country/Region", "weather_param"], 1)
+            minT = group[group["weather_param"]=="mintempC"].drop(["Country/Region", "weather_param"], 1)
+            
+            avg.loc[country] = (maxT.values + minT.values) / 2
+        
+        avg = avg.transpose()
+
+        avg.index = pd.to_datetime(avg.index)
+            
+        return avg
+
+
 
 if __name__ == "__main__":
-    import numpy as np
-
     td = Tmp_Data()
+    print(td.get_loc_group())
