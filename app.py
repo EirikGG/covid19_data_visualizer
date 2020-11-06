@@ -43,8 +43,8 @@ def _format_marks(dTimes):
 texts = json.load(open("config/text_content.json"))
 
 # Importing and setting theme
-external_stylesheets = [dbc.themes.BOOTSTRAP]
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+external_stylesheets = [dbc.themes.SIMPLEX]
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
 
 server = app.server
 
@@ -73,156 +73,145 @@ le_pr_cont_pie = go.Figure(data=(go.Bar(name='Total deaths', x=reg_summed.index,
 
 
 
-
-
-
-
-#####################  TMP Figures  #######################
-
-
-
-
-
-
-#####################  Edu Figures  #######################
-
-
-
-
-
-
 # Webpage main layout
 app.layout = html.Div(children=[
-        dbc.Navbar([
-                dbc.Row([
-                        dbc.Col(html.H1("Covid-19 data", style={"color":"#FFFFFF"}))
-                ])
-        ], color="#404040", sticky="top"),
+        dbc.NavbarSimple(
+                children=[
+                        dbc.NavItem(dbc.NavLink("Covid-19", href="/")),
+                        dbc.NavItem(dbc.NavLink("Temperature", href="/tmp")),
+                        dbc.NavItem(dbc.NavLink("Education", href="/edu"))],
+                brand="Covid-19 data",
+                brand_href="",
+                color="secondary",
+                dark=True),
+        dcc.Location(id='url', refresh=False),
 
-            
         dbc.Card(dbc.CardBody([
-                dcc.Tabs([
-                        dcc.Tab([
-                                ##################### Covid Page #######################
-                                html.Br(),
-                                dbc.Row([
-                                        dbc.Col(html.Div([
-                                                        dbc.Card(
-                                                                dbc.CardBody([
-                                                                        html.H3("Cases per million"),
-                                                                        dcc.Graph(id='reg:comparison', figure=total_by_region)
-                                                                ])
-                                                        )
-                                                ]), width=7),
-                                        dbc.Col(html.Div([
-                                                        dbc.Card(
-                                                                dbc.CardBody([
-                                                                        html.H3("Deaths per million"),
-                                                                        dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
-                                                                ])
-                                                        )
-                                                ]), width=5)
-                                ], align='center'),
-                                
-                                html.Br(),
-                                dbc.Row([
-                                        dbc.Col(
-                                                html.Div([
-                                                        dbc.Card(
-                                                                dbc.CardBody([
-                                                                        html.H3("Cases per million:"),
-                                                                        dcc.Dropdown(id='loc:trend_dropdown', 
-                                                                                options=_format_array(co_da.get_locations()), 
-                                                                                value=['Norway', 'Sweden', 'Denmark'], 
-                                                                                multi=True),
-                                                                        dcc.Graph(id='loc:trend_graph')
-                                                                ])
-                                                        )
-                                                ]), width=12)
-                                        ], align='center'),
-                                
-                                html.Br(),
-                                dbc.Row([
-                                        dbc.Col(
-                                                html.Div([
-                                                        dbc.Card(
-                                                                dbc.CardBody([
-                                                                        html.H3("Configurable graph:"),
-                                                                        html.Br(),
-                                                                        dbc.Row([
-                                                                                dbc.Col([
-                                                                                        html.H4("Y-Axis:"),
-                                                                                        dcc.Dropdown(id='con:trend_dropdown_y', 
-                                                                                                options=_format_array(co_da.get_cols()),
-                                                                                                value="total_cases")                                                                                        
-                                                                                ]),
-                                                                                dbc.Col([
-                                                                                        html.H4("X-Axis:"),
-                                                                                        dcc.Dropdown(id='con:trend_dropdown_x', 
-                                                                                                options=_format_array(co_da.get_cols()),
-                                                                                                value="date")
-                                                                                ])
-                                                                        ]),
-                                                                        html.H4("Date", id="con:date_label"),
-                                                                        dcc.Slider(
-                                                                                id="con:slider",
-                                                                                updatemode="drag",
-                                                                                min=_toUnix(co_da.get_dates().min()),
-                                                                                max=_toUnix(co_da.get_dates().max()),
-                                                                                value=_toUnix(co_da.get_dates().max()),
-                                                                        ),
-                                                                        dcc.Graph(id='con:trend_graph')
-                                                                ])
-                                                        )
-                                                ]), width=12)
-                                        ], align='center'),
-                        ], label="Regional data"),
-
-
-
-
-
-
-                        dcc.Tab([
-                                #####################  TMP Page  #######################
-                                html.Br(),
-                                dbc.Row([
-                                        dbc.Col(
-                                                html.Div([
-                                                        dbc.Card(
-                                                                dbc.CardBody([
-                                                                        html.H3("Total cases for"),
-                                                                        dcc.Dropdown(id='tmp:trend_dropdown', 
-                                                                                options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
-                                                                                value='Norway'),
-                                                                        dcc.Graph(id='tmp:trend_graph')
-                                                                ])
-                                                        )
-                                                ]), width=12)
-                                        ], align='center'),
-                        ], label="Temperature data"),
-
-
-
-
-
-
-
-
-
-
-                        dcc.Tab([
-                        #####################  Edu Page  #######################
-                                
-                        ], label="Educational data")
-                ]),
-
                 html.Br(),
-                dbc.Card(dbc.CardBody([
-                        html.P(texts["description"])
-                ]))
+                html.Div(id="div:page-content"),
+        ])),
+
+        html.Br(),
+        dbc.Card(dbc.CardBody([
+                html.P(texts["description"])
         ]))
 ])
+        
+                
+
+##################### Covid Page #######################
+covid_page = html.Div([
+        dbc.Row([
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Cases per million"),
+                                                dcc.Graph(id='reg:comparison', figure=total_by_region)
+                                        ])
+                                )
+                        ]), width=7),
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Deaths per million"),
+                                                dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
+                                        ])
+                                )
+                        ]), width=5)
+        ], align='center'),
+
+        html.Br(),
+        dbc.Row([
+                dbc.Col(
+                        html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Cases per million:"),
+                                                dcc.Dropdown(id='loc:trend_dropdown', 
+                                                        options=_format_array(co_da.get_locations()), 
+                                                        value=['Norway', 'Sweden', 'Denmark'], 
+                                                        multi=True),
+                                                dcc.Graph(id='loc:trend_graph')
+                                        ])
+                                )
+                        ]), width=12)
+                ], align='center'),
+
+        html.Br(),
+        dbc.Row([
+                dbc.Col(
+                        html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Configurable graph:"),
+                                                html.Br(),
+                                                dbc.Row([
+                                                        dbc.Col([
+                                                                html.H6("Y-Axis:"),
+                                                                dcc.Dropdown(id='con:trend_dropdown_y', 
+                                                                        options=_format_array(co_da.get_cols()),
+                                                                        value="total_cases")                                                                                        
+                                                        ]),
+                                                        dbc.Col([
+                                                                html.H6("X-Axis:"),
+                                                                dcc.Dropdown(id='con:trend_dropdown_x', 
+                                                                        options=_format_array(co_da.get_cols()),
+                                                                        value="date")
+                                                        ])
+                                                ]),
+                                                html.H6("Date", id="con:date_label"),
+                                                dcc.Slider(
+                                                        id="con:slider",
+                                                        updatemode="drag",
+                                                        min=_toUnix(co_da.get_dates().min()),
+                                                        max=_toUnix(co_da.get_dates().max()),
+                                                        value=_toUnix(co_da.get_dates().max()),
+                                                ),
+                                                dcc.Graph(id='con:trend_graph')
+                                        ])
+                                )
+                        ]), width=12)
+                ], align='center'),
+        ])
+
+
+
+
+
+
+#####################  TMP Page  #######################
+tmp_page = html.Div([
+        dbc.Row([
+        dbc.Col(
+                html.Div([
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Total cases for"),
+                                        dcc.Dropdown(id='tmp:trend_dropdown', 
+                                                options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
+                                                value='Norway'),
+                                        dcc.Graph(id='tmp:trend_graph')
+                                ])
+                        )
+                ]), width=12)
+        ], align='center'), 
+])
+
+
+                
+# Update the index
+@app.callback(dash.dependencies.Output('div:page-content', 'children'),
+              [dash.dependencies.Input('url', 'pathname')])
+def display_page(path):
+        if '/' == path:
+                return covid_page
+        elif '/tmp' == path:
+                return tmp_page
+        elif '/edu' == path:
+                pass
+        else:
+                return html.Div([html.H1("Error 404: page {} not found".format(path))])
+
 
 
 
