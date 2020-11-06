@@ -82,8 +82,9 @@ app.layout = html.Div(children=[
                         dbc.NavItem(dbc.NavLink("Education", href="/edu"))],
                 brand="Covid-19 data",
                 brand_href="",
-                color="secondary",
-                dark=True),
+                color="primary",
+                dark=True,
+                sticky="top"),
         dcc.Location(id='url', refresh=False),
 
         dbc.Card(dbc.CardBody([
@@ -91,7 +92,6 @@ app.layout = html.Div(children=[
                 html.Div(id="div:page-content"),
         ])),
 
-        html.Br(),
         dbc.Card(dbc.CardBody([
                 html.P(texts["description"])
         ]))
@@ -159,6 +159,7 @@ covid_page = html.Div([
                                                                         value="date")
                                                         ])
                                                 ]),
+                                                html.Br(),
                                                 html.H6("Date", id="con:date_label"),
                                                 dcc.Slider(
                                                         id="con:slider",
