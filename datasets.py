@@ -41,10 +41,7 @@ class Covid_Data(Data_Handler):
     def __init__(self, url_key="covid-19"):
         '''Poulates class fields with the covid dataset'''
         super().__init__(url_key)
-
-    def get_grouped_data(self, groups):
-        '''Returns pandas groupby object based on groups parameter'''
-        return 
+        self.data["date"] = pd.to_datetime(self.data["date"])
 
     def get_summed_cont(self):
         '''Summed data for continent'''
@@ -55,8 +52,24 @@ class Covid_Data(Data_Handler):
         return self.data.groupby("location").get_group(location)
 
     def get_locations(self):
+        '''Returns a available locations'''
+        return self.get_col("location").unique()
+
+    def get_dates(self):
+        '''Returns date column as datetime objects'''
+        return pd.to_datetime(self.get_col("date"))
+
+    def get_col(self, col):
         '''Returns a column'''
-        return self.data["location"].unique()
+        return self.data[col]
+
+    def get_cols(self):
+        '''Returns all columns'''
+        return self.data.columns
+
+    def get_date(self, date):
+        '''Returns data from one spesific date'''
+        return self.data[date==self.data["date"]]
 
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle

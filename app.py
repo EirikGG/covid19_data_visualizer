@@ -1,4 +1,4 @@
-import dash, json
+import dash, json, time
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -12,23 +12,31 @@ from sklearn import preprocessing
 from datasets import Covid_Data, Tmp_Data
 
 def _format_array(arr):
-        '''Formats the array in array(dict(label: element), dict(label: element)). Used for dropdown menues'''
-        return [{'label': item, 'value':item} for item in arr]
+        '''Formats the array in array(dict(label: element), dict(label: element)).
+        Also capitalizes first letter and replaces underscore with spaces'''
+        
+        return [{'label': item.replace("_", " ").capitalize() , 'value':item} for item in arr]
 
 def _get_common(col1, col2):
         '''Takes twp collumns and returns common elemtents'''
         return np.intersect1d(col1, col2)
 
-def _normalize(col):
-        '''Takes a pandas column and normalizes the values'''
-        # https://stackoverflow.com/questions/48823400/pandas-series-to-2d-array
-        col = pd.DataFrame(col.values.tolist())
-        
-        # https://chrisalbon.com/python/data_wrangling/pandas_normalize_column/
-        x = col.astype(float)                           # Creates a new array of floats 
-        min_max_scaler = preprocessing.MinMaxScaler()   # Creates a min/max object
-        x_scaled = min_max_scaler.fit_transform(x)      # Fit column
-        return pd.DataFrame(x_scaled)                   # Returns normalized result as df
+# The 3 following functions used for slider convertion:
+# https://stackoverflow.com/questions/51063191/date-slider-with-plotly-dash-does-not-work
+def _toUnix(t):
+        '''Converts datetime to unix time'''
+        return int(time.mktime(t.timetuple()))
+
+def _toDT(unix):
+        '''Converts unix time to date'''
+        return pd.to_datetime(unix, unit='s').date().strftime("%d/%m/%y")
+
+def _format_marks(dTimes):
+        '''Formats marks for slider object'''
+        unixT = dict()
+        for time in dTimes:
+                unixT[_toUnix(time)] = str(time.strftime('%d-%m-%y'))
+        return unixT
 
 
 # Variable containg text used in website
@@ -101,7 +109,7 @@ app.layout = html.Div(children=[
                                         dbc.Col(html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total cases per million"),
+                                                                        html.H3("Cases per million"),
                                                                         dcc.Graph(id='reg:comparison', figure=total_by_region)
                                                                 ])
                                                         )
@@ -109,7 +117,7 @@ app.layout = html.Div(children=[
                                         dbc.Col(html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total deaths per million"),
+                                                                        html.H3("Deaths per million"),
                                                                         dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
                                                                 ])
                                                         )
@@ -122,12 +130,48 @@ app.layout = html.Div(children=[
                                                 html.Div([
                                                         dbc.Card(
                                                                 dbc.CardBody([
-                                                                        html.H3("Total cases per million:"),
+                                                                        html.H3("Cases per million:"),
                                                                         dcc.Dropdown(id='loc:trend_dropdown', 
                                                                                 options=_format_array(co_da.get_locations()), 
                                                                                 value=['Norway', 'Sweden', 'Denmark'], 
                                                                                 multi=True),
                                                                         dcc.Graph(id='loc:trend_graph')
+                                                                ])
+                                                        )
+                                                ]), width=12)
+                                        ], align='center'),
+                                
+                                html.Br(),
+                                dbc.Row([
+                                        dbc.Col(
+                                                html.Div([
+                                                        dbc.Card(
+                                                                dbc.CardBody([
+                                                                        html.H3("Configurable graph:"),
+                                                                        html.Br(),
+                                                                        dbc.Row([
+                                                                                dbc.Col([
+                                                                                        html.H4("Y-Axis:"),
+                                                                                        dcc.Dropdown(id='con:trend_dropdown_y', 
+                                                                                                options=_format_array(co_da.get_cols()),
+                                                                                                value="total_cases")                                                                                        
+                                                                                ]),
+                                                                                dbc.Col([
+                                                                                        html.H4("X-Axis:"),
+                                                                                        dcc.Dropdown(id='con:trend_dropdown_x', 
+                                                                                                options=_format_array(co_da.get_cols()),
+                                                                                                value="date")
+                                                                                ])
+                                                                        ]),
+                                                                        html.H4("Date", id="con:date_label"),
+                                                                        dcc.Slider(
+                                                                                id="con:slider",
+                                                                                updatemode="drag",
+                                                                                min=_toUnix(co_da.get_dates().min()),
+                                                                                max=_toUnix(co_da.get_dates().max()),
+                                                                                value=_toUnix(co_da.get_dates().max()),
+                                                                        ),
+                                                                        dcc.Graph(id='con:trend_graph')
                                                                 ])
                                                         )
                                                 ]), width=12)
@@ -185,13 +229,31 @@ app.layout = html.Div(children=[
 @app.callback(
         dash.dependencies.Output('loc:trend_graph', 'figure'),
         [dash.dependencies.Input('loc:trend_dropdown', 'value')])
-def update_locations(locations):
+def update_locations_cases(locations):
         '''Updates trend graph with one or several location trends'''
         data = []
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
         return go.Figure(data = data)
+        
+
+@app.callback(
+        dash.dependencies.Output('con:trend_graph', 'figure'),
+        dash.dependencies.Output('con:date_label', 'children'),
+        [dash.dependencies.Input('con:trend_dropdown_x', 'value'),
+        dash.dependencies.Input('con:trend_dropdown_y', 'value'),
+        dash.dependencies.Input('con:slider', 'value')])
+def update_conf_scat(x_axis, y_axis, date):
+        '''Updates the map with a new x and y axis'''
+        # Convert date from unix time to datetime and use to filter date
+        date = _toDT(date)
+        data = co_da.get_date(date)
+
+        # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
+        fig = go.Figure(go.Scatter(x=data[x_axis], y=data[y_axis], mode="markers") if (x_axis and y_axis) else None)
+
+        return fig, "Date: {}".format(date)
 
 
 
@@ -210,12 +272,6 @@ def update_comp_tmp(location):
                                 dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"]), 
                                 dict(name="Average", x=avg.index, y=avg[location])))
 
-
-
-
-
-
-
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=False, use_reloader=False)
+        app.run_server(debug=True, use_reloader=True)
