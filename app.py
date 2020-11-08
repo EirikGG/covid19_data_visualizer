@@ -88,11 +88,21 @@ app.layout = html.Div(children=[
         dbc.Card(dbc.CardBody([
                 html.Br(),
                 html.Div(id="div:page-content"),
+                html.Br(),
+                html.Div([
+                        dbc.Row([
+                                dbc.Col(
+                                        html.Div([
+                                                dbc.Card(
+                                                        dbc.CardBody([
+                                                                html.P(texts["description"])
+                                                        ])
+                                                )
+                                        ])
+                                )
+                        ])
+                ])
         ])),
-
-        dbc.Card(dbc.CardBody([
-                html.P(texts["description"])
-        ]))
 ])
         
                 
