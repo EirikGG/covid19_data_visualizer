@@ -270,6 +270,7 @@ def update_conf_scat(x_axis, y_axis, date):
         # Convert date from unix time to datetime and use to filter date
         date = _toDT(date)
         data = co_da.get_date(date)
+        data = data["World" != data["location"]]
 
         # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
         fig = go.Figure(go.Scatter(x=data[x_axis], 
