@@ -2,7 +2,6 @@ import dash, json, time
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
@@ -56,17 +55,16 @@ t_da = Tmp_Data()       # Temperature data
 
 
 
-
-
-
-
 ##################### Covid Figures #######################
 
 # Create regional data
 reg_summed = co_da.get_summed_cont()
 
 # Total cases by region (bar chart)
-total_by_region = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"])))
+total_by_region = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases"])))
+
+# Total cases by region (bar chart)
+total_by_region_pr_m = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"])))
 
 # Calculate lethality prosentage for each continent (pie chart)
 le_pr_cont_pie = go.Figure(data=(go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths_per_million"], marker={'color':'#ff7f0e'})))
@@ -106,36 +104,58 @@ covid_page = html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3("Cases per million"),
-                                                dcc.Graph(id='reg:comparison', figure=total_by_region)
+                                                html.Br(),
+                                                html.Br(),
+                                                dcc.Graph(id='reg:comparison', figure=total_by_region_pr_m)
                                         ])
                                 )
-                        ]), width=7),
+                        ]), width=4
+                ),
+                
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Cases per million:"),
+                                                dcc.Dropdown(id='loc:trend_pr_m_dropdown', 
+                                                        options=_format_array(co_da.get_locations()), 
+                                                        value=['Norway', 'Sweden', 'Denmark'], 
+                                                        multi=True),
+                                                dcc.Graph(id='loc:trend_pr_m_graph')
+                                        ])
+                                )
+                        ]), width=8
+                ),
+        ]),
+
+        html.Br(),        
+        dbc.Row([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3("Deaths per million"),
+                                                html.Br(),
+                                                html.Br(),
                                                 dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
                                         ])
                                 )
-                        ]), width=5)
-        ], align='center'),
-
-        html.Br(),
-        dbc.Row([
-                dbc.Col(
-                        html.Div([
+                        ]), width=4
+                ),
+                
+                dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Cases per million:"),
-                                                dcc.Dropdown(id='loc:trend_dropdown', 
+                                                html.H3("Deaths per million:"),
+                                                dcc.Dropdown(id='loc:trend_death_pr_m_dropdown', 
                                                         options=_format_array(co_da.get_locations()), 
                                                         value=['Norway', 'Sweden', 'Denmark'], 
                                                         multi=True),
-                                                dcc.Graph(id='loc:trend_graph')
+                                                dcc.Graph(id='loc:trend_death_pr_m_graph')
                                         ])
                                 )
-                        ]), width=12)
-                ], align='center'),
+                        ]), width=8
+                ),
+        ]),
+        
 
         html.Br(),
         dbc.Row([
@@ -147,17 +167,17 @@ covid_page = html.Div([
                                                 html.Br(),
                                                 dbc.Row([
                                                         dbc.Col([
+                                                                html.H6("X-Axis:"),
+                                                                dcc.Dropdown(id='con:trend_dropdown_x', 
+                                                                        options=_format_array(co_da.get_cols()),
+                                                                        value="population")
+                                                        ]),
+                                                        dbc.Col([
                                                                 html.H6("Y-Axis:"),
                                                                 dcc.Dropdown(id='con:trend_dropdown_y', 
                                                                         options=_format_array(co_da.get_cols()),
                                                                         value="total_cases")                                                                                        
                                                         ]),
-                                                        dbc.Col([
-                                                                html.H6("X-Axis:"),
-                                                                dcc.Dropdown(id='con:trend_dropdown_x', 
-                                                                        options=_format_array(co_da.get_cols()),
-                                                                        value="date")
-                                                        ])
                                                 ]),
                                                 html.Br(),
                                                 html.H6("Date", id="con:date_label"),
@@ -168,12 +188,13 @@ covid_page = html.Div([
                                                         max=_toUnix(co_da.get_dates().max()),
                                                         value=_toUnix(co_da.get_dates().max()),
                                                 ),
-                                                dcc.Graph(id='con:trend_graph')
+                                                dcc.Graph(id='con:trend_graph'),
                                         ])
                                 )
-                        ]), width=12)
-                ], align='center'),
-        ])
+                        ]), width=12
+                )
+        ], align='center'),
+])
 
 
 
@@ -215,16 +236,26 @@ def display_page(path):
 
 
 
-
 @app.callback(
-        dash.dependencies.Output('loc:trend_graph', 'figure'),
-        [dash.dependencies.Input('loc:trend_dropdown', 'value')])
-def update_locations_cases(locations):
+        dash.dependencies.Output('loc:trend_pr_m_graph', 'figure'),
+        [dash.dependencies.Input('loc:trend_pr_m_dropdown', 'value')])
+def update_locations_pr_m_cases(locations):
         '''Updates trend graph with one or several location trends'''
         data = []
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
+        return go.Figure(data = data)
+
+@app.callback(
+        dash.dependencies.Output('loc:trend_death_pr_m_graph', 'figure'),
+        [dash.dependencies.Input('loc:trend_death_pr_m_dropdown', 'value')])
+def update_locations_pr_m_deaths(locations):
+        '''Updates trend graph with one or several location trends'''
+        data = []
+        for location in (locations,) if str==type(locations) else locations:
+                lo_da = co_da.get_location(location)
+                data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_deaths_per_million"]))
         return go.Figure(data = data)
         
 
@@ -241,11 +272,13 @@ def update_conf_scat(x_axis, y_axis, date):
         data = co_da.get_date(date)
 
         # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
-        fig = go.Figure(go.Scatter(x=data[x_axis], y=data[y_axis], mode="markers") if (x_axis and y_axis) else None)
+        fig = go.Figure(go.Scatter(x=data[x_axis], 
+                                y=data[y_axis], 
+                                mode="markers",
+                                text=data["location"],
+                                hoverinfo="text") if (x_axis and y_axis) else None)
 
         return fig, "Date: {}".format(date)
-
-
 
 
 @app.callback(
@@ -253,7 +286,6 @@ def update_conf_scat(x_axis, y_axis, date):
         [dash.dependencies.Input('tmp:trend_dropdown', 'value')])
 def update_comp_tmp(location):
         '''Updates trend graph with one or several location trends'''
-        
         tm_da_co  = t_da.get_location(location)         # Tmp data for a single location
         avg = t_da.get_loc_group()
 
