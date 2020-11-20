@@ -82,20 +82,11 @@ app.layout = html.Div(children=[
         dcc.Location(id='url', refresh=False),
 
         dbc.Card(dbc.CardBody([
-                html.Br(),
-                html.Div(id="div:page-content"),
-                html.Br(),
-                html.Div([
-                        dbc.Row([
-                                dbc.Col(
-                                        dbc.Card(
-                                                dbc.CardBody([
-                                                        html.P(texts["description"])
-                                                ])
-                                        )
-                                )
-                        ])
-                ])
+                dbc.Container([
+                                html.Br(),
+                                html.Div(id="div:page-content"),
+                                html.Br(),
+                ], fluid=True)
         ])),
 ])  
 
@@ -198,20 +189,22 @@ covid_page = html.Div([
 #####################  TMP Page  #######################
 tmp_page = html.Div([
         dbc.Row([
-        dbc.Col(
-                html.Div([
-                        dbc.Card(
-                                dbc.CardBody([
-                                        html.H3("Total cases for"),
-                                        dcc.Dropdown(id='tmp:trend_dropdown', 
-                                                options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
-                                                value='Norway'),
-                                        dcc.Graph(id='tmp:trend_graph')
-                                ])
-                        )
-                ]), width=12)
-        ], align='center'), 
+                dbc.Col(
+                        html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Total cases for"),
+                                                dcc.Dropdown(id='tmp:trend_dropdown', 
+                                                        options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
+                                                        value='Norway'),
+                                                dcc.Graph(id='tmp:trend_graph')
+                                        ])
+                                )
+                        ]), width=10)
+        ], justify='center'), 
 ])
+
+
                 
 # Update the index
 @app.callback(dash.dependencies.Output('div:page-content', 'children'),
