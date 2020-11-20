@@ -5,24 +5,27 @@ import json, copy
 class Data_Handler(object):
     paths       = None          # Paths and urls to find datasets
     covid_data  = None          # Covid-19 dataset
+    description = None          # Status of dataset e.g. local file or web download
 
     def __init__(self, url_key, url_path="config/dataset_paths.json"):
         self.paths = self.do_load_urls(url_path)
-        self.data = self.load_data(self.paths[url_key])
+        self.data, self.description = self.load_data(self.paths[url_key])
 
     def load_data(self, paths):
         '''Loads the data from the url array, if it getts an exeption 
         it tries the next one and so on'''
         res = None
-        for path in paths:
+        for path_obj in paths:
+            path = path_obj["path"]
             try: 
-                res = pd.read_csv(path, parse_dates=True) 
+                res = pd.read_csv(path, parse_dates=True)
+                des = path_obj["description"]
                 print("Loaded dataset from {}".format(path))
                 break
             except Exception as e:
                 print("\nError loading dataset\n", e, "\nContinuing anyway...\n")
                 continue
-        return res
+        return res, des
 
     def do_load_urls(self, path):
         '''Loads json file from path parameter'''
@@ -31,6 +34,10 @@ class Data_Handler(object):
     def get_urls(self):
         '''Returns a deepcopy of paths dict'''
         return copy.deepcopy(self.paths)
+
+    def get_description(self):
+        '''Returns the description of data set, eg. local file or web download'''
+        return self.description
 
 
 class Covid_Data(Data_Handler):

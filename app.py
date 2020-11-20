@@ -49,11 +49,7 @@ server = app.server
 
 # Importing backends
 co_da = Covid_Data()    # Covid data
-t_da = Tmp_Data()       # Temperature data
-
-
-
-
+t_da = Tmp_Data()       # Temperature data                
 
 ##################### Covid Figures #######################
 
@@ -92,23 +88,55 @@ app.layout = html.Div(children=[
                 html.Div([
                         dbc.Row([
                                 dbc.Col(
-                                        html.Div([
-                                                dbc.Card(
-                                                        dbc.CardBody([
-                                                                html.P(texts["description"])
-                                                        ])
-                                                )
-                                        ])
+                                        dbc.Card(
+                                                dbc.CardBody([
+                                                        html.P(texts["description"])
+                                                ])
+                                        )
                                 )
                         ])
                 ])
         ])),
-])
-        
-                
+])  
 
 ##################### Covid Page #######################
 covid_page = html.Div([
+        dbc.Row([
+                dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Configurable graph:"),
+                                        html.Br(),
+                                        dbc.Row([
+                                                dbc.Col([
+                                                        html.H6("X-Axis:"),
+                                                        dcc.Dropdown(id='con:trend_dropdown_x', 
+                                                                options=_format_array(co_da.get_cols()),
+                                                                value="population")
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Y-Axis:"),
+                                                        dcc.Dropdown(id='con:trend_dropdown_y', 
+                                                                options=_format_array(co_da.get_cols()),
+                                                                value="total_cases")                                                                                        
+                                                ]),
+                                        ]),
+                                        html.Br(),
+                                        html.H6("Date", id="con:date_label"),
+                                        dcc.Slider(
+                                                id="con:slider",
+                                                updatemode="drag",
+                                                min=_toUnix(co_da.get_dates().min()),
+                                                max=_toUnix(co_da.get_dates().max()),
+                                                value=_toUnix(co_da.get_dates().max()),
+                                        ),
+                                        dcc.Graph(id='con:trend_graph'),
+                                ])
+                        ), width=12
+                )
+        ], align='center'),
+
+        html.Br(),
         dbc.Row([
                 dbc.Col(html.Div([
                                 dbc.Card(
@@ -165,51 +193,7 @@ covid_page = html.Div([
                         ]), width=8
                 ),
         ]),
-        
-
-        html.Br(),
-        dbc.Row([
-                dbc.Col(
-                        html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
-                                                html.H3("Configurable graph:"),
-                                                html.Br(),
-                                                dbc.Row([
-                                                        dbc.Col([
-                                                                html.H6("X-Axis:"),
-                                                                dcc.Dropdown(id='con:trend_dropdown_x', 
-                                                                        options=_format_array(co_da.get_cols()),
-                                                                        value="population")
-                                                        ]),
-                                                        dbc.Col([
-                                                                html.H6("Y-Axis:"),
-                                                                dcc.Dropdown(id='con:trend_dropdown_y', 
-                                                                        options=_format_array(co_da.get_cols()),
-                                                                        value="total_cases")                                                                                        
-                                                        ]),
-                                                ]),
-                                                html.Br(),
-                                                html.H6("Date", id="con:date_label"),
-                                                dcc.Slider(
-                                                        id="con:slider",
-                                                        updatemode="drag",
-                                                        min=_toUnix(co_da.get_dates().min()),
-                                                        max=_toUnix(co_da.get_dates().max()),
-                                                        value=_toUnix(co_da.get_dates().max()),
-                                                ),
-                                                dcc.Graph(id='con:trend_graph'),
-                                        ])
-                                )
-                        ]), width=12
-                )
-        ], align='center'),
 ])
-
-
-
-
-
 
 #####################  TMP Page  #######################
 tmp_page = html.Div([
@@ -228,8 +212,6 @@ tmp_page = html.Div([
                 ]), width=12)
         ], align='center'), 
 ])
-
-
                 
 # Update the index
 @app.callback(dash.dependencies.Output('div:page-content', 'children'),
@@ -243,8 +225,6 @@ def display_page(path):
                 pass
         else:
                 return html.Div([html.H1("Error 404: page {} not found".format(path))])
-
-
 
 @app.callback(
         dash.dependencies.Output('loc:trend_pr_m_graph', 'figure'),
@@ -268,7 +248,6 @@ def update_locations_pr_m_deaths(locations):
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_deaths_per_million"]))
         return go.Figure(data = data)
         
-
 @app.callback(
         dash.dependencies.Output('con:trend_graph', 'figure'),
         dash.dependencies.Output('con:date_label', 'children'),
@@ -290,7 +269,6 @@ def update_conf_scat(x_axis, y_axis, date):
                                 hoverinfo="text") if (x_axis and y_axis) else None)
 
         return fig, "Date: {}".format(date)
-
 
 @app.callback(
         dash.dependencies.Output('tmp:trend_graph', 'figure'),
