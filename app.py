@@ -93,6 +93,16 @@ app.layout = html.Div(children=[
 ##################### Covid Page #######################
 covid_page = html.Div([
         dbc.Row([
+                dbc.Col([
+                        dbc.Card(
+                                        dcc.Graph(id='map:map')
+                                
+                        )
+                ])
+        ]),
+
+        html.Br(),
+        dbc.Row([
                 dbc.Col(
                         dbc.Card(
                                 dbc.CardBody([
@@ -204,6 +214,24 @@ tmp_page = html.Div([
         ], justify='center'), 
 ])
 
+# Update map
+@app.callback(
+        dash.dependencies.Output('map:map', 'figure'),
+        [dash.dependencies.Input('map:map', 'value')])
+def update_map(value):
+        print(value)
+        c_map = go.Choropleth(
+                locations=co_da.get_locations(),
+        )
+        fig = go.Figure(
+                data=c_map
+        ).update_layout(
+                autosize=False,
+                margin=dict(t=0, b=0, l=0, r=0)
+        )
+
+
+        return fig
 
                 
 # Update the index
@@ -278,4 +306,4 @@ def update_comp_tmp(location):
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=False, use_reloader=False)
+        app.run_server(debug=True, use_reloader=True)
