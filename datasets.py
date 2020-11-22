@@ -4,7 +4,7 @@ import json, copy
 
 class Data_Handler(object):
     paths       = None          # Paths and urls to find datasets
-    covid_data  = None          # Covid-19 dataset
+    data        = None          # Dataset
     description = None          # Status of dataset e.g. local file or web download
 
     def __init__(self, url_key, url_path="config/dataset_paths.json"):
@@ -39,6 +39,9 @@ class Data_Handler(object):
         '''Returns the description of data set, eg. local file or web download'''
         return self.description
 
+    def get_data(self):
+        '''Returns a copy of the pandas dataframe containing the dataset'''
+        return copy.deepcopy(self.data)
 
 class Covid_Data(Data_Handler):
     '''Class can load and operate on covid-19 dataset from ourworld in data
@@ -59,8 +62,8 @@ class Covid_Data(Data_Handler):
         return self.data.groupby("location").get_group(location)
 
     def get_locations(self):
-        '''Returns a available locations'''
-        return self.get_col("location").unique()
+        '''Returns a available locations, uses :-2 to remove international and world'''
+        return self.get_col("location").unique()[:-2]
 
     def get_dates(self):
         '''Returns date column as datetime objects'''
@@ -77,6 +80,18 @@ class Covid_Data(Data_Handler):
     def get_date(self, date):
         '''Returns data from one spesific date'''
         return self.data[date==self.data["date"]]
+
+    def get_total_by_iso(self):
+        '''Filters data and returns total cases and iso codes'''
+        data_filtered = self.data[(self.data["location"] != "World") &
+                                (self.data["location"] != "International") &
+                                (self.data["date"] == self.get_dates().max())]
+        return data_filtered.groupby("iso_code")["total_deaths"].max()
+
+    def get_iso(self, iso):
+        '''Getts dataframe for spesific iso code'''
+        return self.data[iso == self.data["iso_code"]]
+
 
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
@@ -118,5 +133,5 @@ class Tmp_Data(Data_Handler):
 
 
 if __name__ == "__main__":
-    td = Tmp_Data()
-    print(td.get_loc_group())
+    d = Covid_Data()
+    print(d.get_total_by_iso())

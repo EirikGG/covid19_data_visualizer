@@ -73,9 +73,9 @@ app.layout = html.Div(children=[
                 children=[
                         dbc.NavItem(dbc.NavLink("Covid-19", href="/")),
                         dbc.NavItem(dbc.NavLink("Temperature", href="/tmp")),
-                        dbc.NavItem(dbc.NavLink("Education", href="/edu"))],
+                        dbc.NavItem(dbc.NavLink("Configurable graph", href="/conf"))],
                 brand="Covid-19 data",
-                brand_href="",
+                brand_href="/",
                 color="primary",
                 dark=True,
                 sticky="top"),
@@ -90,52 +90,31 @@ app.layout = html.Div(children=[
         ])),
 ])  
 
+
+
+
+
+
+
+
+
+
+
+
+
 ##################### Covid Page #######################
 covid_page = html.Div([
-        dbc.Row([
-                dbc.Col([
-                        dbc.Card(
-                                        dcc.Graph(id='map:map')
-                                
-                        )
-                ])
-        ]),
-
-        html.Br(),
         dbc.Row([
                 dbc.Col(
                         dbc.Card(
                                 dbc.CardBody([
-                                        html.H3("Configurable graph:"),
-                                        html.Br(),
-                                        dbc.Row([
-                                                dbc.Col([
-                                                        html.H6("X-Axis:"),
-                                                        dcc.Dropdown(id='con:trend_dropdown_x', 
-                                                                options=_format_array(co_da.get_cols()),
-                                                                value="population")
-                                                ]),
-                                                dbc.Col([
-                                                        html.H6("Y-Axis:"),
-                                                        dcc.Dropdown(id='con:trend_dropdown_y', 
-                                                                options=_format_array(co_da.get_cols()),
-                                                                value="total_cases")                                                                                        
-                                                ]),
-                                        ]),
-                                        html.Br(),
-                                        html.H6("Date", id="con:date_label"),
-                                        dcc.Slider(
-                                                id="con:slider",
-                                                updatemode="drag",
-                                                min=_toUnix(co_da.get_dates().min()),
-                                                max=_toUnix(co_da.get_dates().max()),
-                                                value=_toUnix(co_da.get_dates().max()),
-                                        ),
-                                        dcc.Graph(id='con:trend_graph'),
+                                        dcc.Graph(id='map:map') 
                                 ])
                         ), width=12
-                )
-        ], align='center'),
+                ),
+        ]),
+
+
 
         html.Br(),
         dbc.Row([
@@ -214,24 +193,76 @@ tmp_page = html.Div([
         ], justify='center'), 
 ])
 
-# Update map
-@app.callback(
-        dash.dependencies.Output('map:map', 'figure'),
-        [dash.dependencies.Input('map:map', 'value')])
-def update_map(value):
-        print(value)
-        c_map = go.Choropleth(
-                locations=co_da.get_locations(),
-        )
-        fig = go.Figure(
-                data=c_map
-        ).update_layout(
-                autosize=False,
-                margin=dict(t=0, b=0, l=0, r=0)
-        )
 
 
-        return fig
+
+
+
+
+#####################  TMP Page  #######################
+conf_page = html.Div([
+        dbc.Row([
+                dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Configurable graph:"),
+                                        html.Br(),
+                                        dbc.Row([
+                                                dbc.Col([
+                                                        html.H6("X-Axis:"),
+                                                        dcc.Dropdown(id='con:trend_dropdown_x', 
+                                                                options=_format_array(co_da.get_cols()),
+                                                                value="population")
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Y-Axis:"),
+                                                        dcc.Dropdown(id='con:trend_dropdown_y', 
+                                                                options=_format_array(co_da.get_cols()),
+                                                                value="total_cases")                                                                                        
+                                                ]),
+                                        ]),
+                                        html.Br(),
+                                        html.H6("Date", id="con:date_label"),
+                                        dcc.Slider(
+                                                id="con:slider",
+                                                updatemode="drag",
+                                                min=_toUnix(co_da.get_dates().min()),
+                                                max=_toUnix(co_da.get_dates().max()),
+                                                value=_toUnix(co_da.get_dates().max()),
+                                        ),
+                                        dcc.Graph(id='con:trend_graph'),
+                                ])
+                        ), width=12
+                )
+        ], align='center'),
+        html.Br(),
+        dbc.Row([                
+                dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Cases per million:"),
+                                        dcc.Dropdown(id='loc:trend_pr_m_dropdown', 
+                                                options=_format_array(co_da.get_locations()), 
+                                                value=['Norway', 'Sweden', 'Denmark'], 
+                                                multi=True),
+                                        dcc.Graph(id='loc:trend_pr_m_graph')
+                                ])
+                        ), width=6
+                ),
+                dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Deaths per million:"),
+                                        dcc.Dropdown(id='loc:trend_death_pr_m_dropdown', 
+                                                options=_format_array(co_da.get_locations()), 
+                                                value=['Norway', 'Sweden', 'Denmark'], 
+                                                multi=True),
+                                        dcc.Graph(id='loc:trend_death_pr_m_graph')
+                                ])
+                        ), width=6
+                )
+        ]),
+])
 
                 
 # Update the index
@@ -242,10 +273,37 @@ def display_page(path):
                 return covid_page
         elif '/tmp' == path:
                 return tmp_page
-        elif '/edu' == path:
-                pass
+        elif '/conf' == path:
+                return conf_page
         else:
                 return html.Div([html.H1("Error 404: page {} not found".format(path))])
+
+# Update map
+@app.callback(
+        dash.dependencies.Output('map:map', 'figure'),
+        [dash.dependencies.Input('map:map', 'clickData')])
+def update_map(value):
+        iso_total = co_da.get_total_by_iso()
+
+        try:
+                selected_country = value["points"][0]["location"]
+        except:
+                selected_country = "NOR"
+
+        c_map = go.Choropleth(
+                locations=iso_total.index,
+                z=iso_total
+        )
+
+        fig = go.Figure(
+                data=c_map
+        ).update_layout(
+                autosize=False,
+                margin=dict(t=0, b=0, l=0, r=0)
+        )
+
+
+        return fig
 
 @app.callback(
         dash.dependencies.Output('loc:trend_pr_m_graph', 'figure'),
