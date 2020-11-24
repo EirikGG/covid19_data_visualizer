@@ -10,16 +10,7 @@ import numpy as np
 from app import app
 from app import co_da, t_da
 
-def _format_array(arr):
-        '''Formats the array in array(dict(label: element), dict(label: element)).
-        Also capitalizes first letter and replaces underscore with spaces'''
-        
-        return [{'label': item.replace("_", " ").capitalize() , 'value':item} for item in arr]
-
-        
-def _get_common(col1, col2):
-        '''Takes twp collumns and returns common elemtents'''
-        return np.intersect1d(col1, col2)
+from apps.tools import format_array, get_common
 
 #####################  TMP Page  #######################
 layout = html.Div([
@@ -30,7 +21,7 @@ layout = html.Div([
                                         dbc.CardBody([
                                                 html.H3("Total cases for"),
                                                 dcc.Dropdown(id='tmp:trend_dropdown', 
-                                                        options=_format_array(_get_common(co_da.get_locations(), t_da.get_locations())), 
+                                                        options=format_array(get_common(co_da.get_locations(), t_da.get_locations())), 
                                                         value='Norway'),
                                                 dcc.Graph(id='tmp:trend_graph')
                                         ])

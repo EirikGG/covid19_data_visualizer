@@ -9,28 +9,8 @@ import pandas as pd
 from app import app
 from app import co_da
 
+from apps.tools import format_array, toUnix, toDT, format_marks
 
-def _format_array(arr):
-        '''Formats the array in array(dict(label: element), dict(label: element)).
-        Also capitalizes first letter and replaces underscore with spaces'''
-        
-        return [{'label': item.replace("_", " ").capitalize() , 'value':item} for item in arr]
-# The 3 following functions used for slider convertion:
-# https://stackoverflow.com/questions/51063191/date-slider-with-plotly-dash-does-not-work
-def _toUnix(t):
-        '''Converts datetime to unix time'''
-        return int(time.mktime(t.timetuple()))
-
-def _toDT(unix):
-        '''Converts unix time to date'''
-        return pd.to_datetime(unix, unit='s').date().strftime("%d/%m/%y")
-
-def _format_marks(dTimes):
-        '''Formats marks for slider object'''
-        unixT = dict()
-        for time in dTimes:
-                unixT[_toUnix(time)] = str(time.strftime('%d-%m-%y'))
-        return unixT
 
 #####################  TMP Page  #######################
 layout = html.Div([
@@ -44,13 +24,13 @@ layout = html.Div([
                                                 dbc.Col([
                                                         html.H6("X-Axis:"),
                                                         dcc.Dropdown(id='con:trend_dropdown_x', 
-                                                                options=_format_array(co_da.get_cols()),
+                                                                options=format_array(co_da.get_cols()),
                                                                 value="population")
                                                 ]),
                                                 dbc.Col([
                                                         html.H6("Y-Axis:"),
                                                         dcc.Dropdown(id='con:trend_dropdown_y', 
-                                                                options=_format_array(co_da.get_cols()),
+                                                                options=format_array(co_da.get_cols()),
                                                                 value="total_cases")                                                                                        
                                                 ]),
                                         ]),
@@ -59,9 +39,9 @@ layout = html.Div([
                                         dcc.Slider(
                                                 id="con:slider",
                                                 updatemode="drag",
-                                                min=_toUnix(co_da.get_dates().min()),
-                                                max=_toUnix(co_da.get_dates().max()),
-                                                value=_toUnix(co_da.get_dates().max()),
+                                                min=toUnix(co_da.get_dates().min()),
+                                                max=toUnix(co_da.get_dates().max()),
+                                                value=toUnix(co_da.get_dates().max()),
                                         ),
                                         dcc.Graph(id='con:trend_graph'),
                                 ])
@@ -75,7 +55,7 @@ layout = html.Div([
                                 dbc.CardBody([
                                         html.H3("Cases per million:"),
                                         dcc.Dropdown(id='loc:trend_pr_m_dropdown', 
-                                                options=_format_array(co_da.get_locations()), 
+                                                options=format_array(co_da.get_locations()), 
                                                 value=['Norway', 'Sweden', 'Denmark'], 
                                                 multi=True),
                                         dcc.Graph(id='loc:trend_pr_m_graph')
@@ -87,7 +67,7 @@ layout = html.Div([
                                 dbc.CardBody([
                                         html.H3("Deaths per million:"),
                                         dcc.Dropdown(id='loc:trend_death_pr_m_dropdown', 
-                                                options=_format_array(co_da.get_locations()), 
+                                                options=format_array(co_da.get_locations()), 
                                                 value=['Norway', 'Sweden', 'Denmark'], 
                                                 multi=True),
                                         dcc.Graph(id='loc:trend_death_pr_m_graph')
@@ -107,7 +87,7 @@ layout = html.Div([
 def update_conf_scat(x_axis, y_axis, date):
         '''Updates the map with a new x and y axis'''
         # Convert date from unix time to datetime and use to filter date
-        date = _toDT(date)
+        date = toDT(date)
         data = co_da.get_date(date)
         data = data["World" != data["location"]]
 

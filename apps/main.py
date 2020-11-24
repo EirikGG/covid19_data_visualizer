@@ -9,11 +9,8 @@ import pandas as pd
 from app import app
 from app import co_da
 
-def _format_array(arr):
-        '''Formats the array in array(dict(label: element), dict(label: element)).
-        Also capitalizes first letter and replaces underscore with spaces'''
-        
-        return [{'label': item.replace("_", " ").capitalize() , 'value':item} for item in arr]
+from apps.tools import format_array
+
 ##################### Covid Figures #######################
 
 # Create regional data
@@ -56,7 +53,7 @@ layout = html.Div([
                                         dbc.CardBody([
                                                 html.H3("Cases per million:"),
                                                 dcc.Dropdown(id='loc:trend_pr_m_dropdown', 
-                                                        options=_format_array(co_da.get_locations()), 
+                                                        options=format_array(co_da.get_locations()), 
                                                         value=['Norway', 'Sweden', 'Denmark'], 
                                                         multi=True),
                                                 dcc.Graph(id='loc:trend_pr_m_graph')
@@ -85,7 +82,7 @@ layout = html.Div([
                                         dbc.CardBody([
                                                 html.H3("Deaths per million:"),
                                                 dcc.Dropdown(id='loc:trend_death_pr_m_dropdown', 
-                                                        options=_format_array(co_da.get_locations()), 
+                                                        options=format_array(co_da.get_locations()), 
                                                         value=['Norway', 'Sweden', 'Denmark'], 
                                                         multi=True),
                                                 dcc.Graph(id='loc:trend_death_pr_m_graph')
