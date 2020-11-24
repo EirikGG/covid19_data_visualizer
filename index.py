@@ -8,6 +8,8 @@ from app import app
 from apps import main, configurable, temperature
 
 
+server = app.server
+
 # Webpage main layout
 app.layout = html.Div(children=[
         dbc.NavbarSimple(
