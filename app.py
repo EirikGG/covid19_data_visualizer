@@ -73,7 +73,7 @@ app.layout = html.Div(children=[
                 children=[
                         dbc.NavItem(dbc.NavLink("Covid-19", href="/")),
                         dbc.NavItem(dbc.NavLink("Temperature", href="/tmp")),
-                        dbc.NavItem(dbc.NavLink("Configurable graph", href="/conf"))],
+                        dbc.NavItem(dbc.NavLink("Configurable", href="/conf"))],
                 brand="Covid-19 data",
                 brand_href="/",
                 color="primary",
@@ -104,15 +104,7 @@ app.layout = html.Div(children=[
 
 ##################### Covid Page #######################
 covid_page = html.Div([
-        dbc.Row([
-                dbc.Col(
-                        dbc.Card(
-                                dbc.CardBody([
-                                        dcc.Graph(id='map:map') 
-                                ])
-                        ), width=12
-                ),
-        ]),
+        dcc.Graph(id='map:map'),
 
 
 
@@ -289,6 +281,8 @@ def update_map(value):
                 selected_country = value["points"][0]["location"]
         except:
                 selected_country = "NOR"
+ 
+        print(selected_country)
 
         c_map = go.Choropleth(
                 locations=iso_total.index,
@@ -298,8 +292,12 @@ def update_map(value):
         fig = go.Figure(
                 data=c_map
         ).update_layout(
-                autosize=False,
-                margin=dict(t=0, b=0, l=0, r=0)
+                autosize=True,
+                margin=dict(t=0, b=0, l=0, r=0),
+
+                geo = dict(
+                        showframe=False
+                ) 
         )
 
 
