@@ -11,26 +11,8 @@ from app import co_da
 
 from apps.tools import format_array
 
-##################### Covid Figures #######################
-
-# Create regional data
-reg_summed = co_da.get_summed_cont()
-
-# Total cases by region (bar chart)
-total_by_region = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases"])))
-
-# Total cases by region (bar chart)
-total_by_region_pr_m = go.Figure(data=(go.Bar(name='Total cases', x=reg_summed.index, y=reg_summed["new_cases_per_million"])))
-
-# Calculate lethality prosentage for each continent (pie chart)
-le_pr_cont_pie = go.Figure(data=(go.Bar(name='Total deaths', x=reg_summed.index, y=reg_summed["new_deaths_per_million"], marker={'color':'#ff7f0e'})))
-
-
-
-
-##################### Covid Page #######################
 layout = html.Div([
-        dcc.Graph(id='map:map'),
+        dcc.Graph(id='main:map'),
 
 
 
@@ -39,73 +21,32 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Cases per million"),
-                                                html.Br(),
-                                                html.Br(),
-                                                dcc.Graph(id='reg:comparison', figure=total_by_region_pr_m)
-                                        ])
-                                )
-                        ]), width=4
-                ),
-                
-                dbc.Col(html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
                                                 html.H3("Cases per million:"),
-                                                dcc.Dropdown(id='loc:trend_pr_m_dropdown', 
-                                                        options=format_array(co_da.get_locations()), 
-                                                        value=['Norway', 'Sweden', 'Denmark'], 
-                                                        multi=True),
-                                                dcc.Graph(id='loc:trend_pr_m_graph')
+                                                dcc.Graph(id='main:trend_pr_m_graph')
                                         ])
                                 )
-                        ]), width=8
-                ),
-        ]),
-
-        html.Br(),        
-        dbc.Row([
-                dbc.Col(html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
-                                                html.H3("Deaths per million"),
-                                                html.Br(),
-                                                html.Br(),
-                                                dcc.Graph(id='reg:deaths', figure=le_pr_cont_pie)
-                                        ])
-                                )
-                        ]), width=4
+                        ]), width=6
                 ),
                 
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3("Deaths per million:"),
-                                                dcc.Dropdown(id='loc:trend_death_pr_m_dropdown', 
-                                                        options=format_array(co_da.get_locations()), 
-                                                        value=['Norway', 'Sweden', 'Denmark'], 
-                                                        multi=True),
-                                                dcc.Graph(id='loc:trend_death_pr_m_graph')
+                                                dcc.Graph(id='main:trend_death_pr_m_graph')
                                         ])
                                 )
-                        ]), width=8
+                        ]), width=6
                 ),
         ]),
 ])
 
 # Update map
 @app.callback(
-        dash.dependencies.Output('map:map', 'figure'),
-        [dash.dependencies.Input('map:map', 'clickData')])
-def update_map(value):
+        dash.dependencies.Output('main:map', 'figure'),
+        dash.dependencies.Input('main:map', 'clickData'))
+def update_map(iso_code):
+        print("User clicked country with iso code = \"{}\" ".format(iso_code))
         iso_total = co_da.get_total_by_iso()
-
-        try:
-                selected_country = value["points"][0]["location"]
-        except:
-                selected_country = "NOR"
- 
-        print(selected_country)
 
         c_map = go.Choropleth(
                 locations=iso_total.index,
@@ -123,5 +64,22 @@ def update_map(value):
                 ) 
         )
 
-
         return fig
+
+
+@app.callback(
+        dash.dependencies.Output('main:trend_pr_m_graph', 'figure'),
+        dash.dependencies.Output('main:trend_death_pr_m_graph', 'figure'),
+        dash.dependencies.Input('main:map', 'clickData'))
+def main_locations_per_m(value):
+        '''Updates trend graph with one or several location trends'''
+        try:
+                selected_country = value["points"][0]["location"]
+        except:
+                selected_country = "NOR"
+
+        lo_da = co_da.get_iso(selected_country)
+
+        total_cases = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
+        total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths_per_million"]))
+        return total_cases, total_deaths

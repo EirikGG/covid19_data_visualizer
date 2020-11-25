@@ -53,6 +53,7 @@ class Covid_Data(Data_Handler):
         super().__init__(url_key)
         self.data["date"] = pd.to_datetime(self.data["date"])
 
+
     def get_summed_cont(self):
         '''Summed data for continent'''
         return self.data.groupby("continent").sum()
@@ -90,6 +91,7 @@ class Covid_Data(Data_Handler):
 
     def get_iso(self, iso):
         '''Getts dataframe for spesific iso code'''
+        print("iso {}, ".format(iso))
         return self.data[iso == self.data["iso_code"]]
 
 
