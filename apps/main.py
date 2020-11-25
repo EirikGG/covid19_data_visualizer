@@ -46,6 +46,18 @@ layout = html.Div([
                         ]), width=6
                 ),
         ]),
+
+        html.Br(),
+        dbc.Row([
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                
+                                        ])
+                                )
+                        ]), width=12
+                ),
+        ]),
 ])
 
 # Update map

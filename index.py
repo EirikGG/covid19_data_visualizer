@@ -15,7 +15,6 @@ app.layout = html.Div(children=[
         dbc.NavbarSimple(
                 children=[
                         dbc.NavItem(dbc.NavLink("Home", href="/")),
-                        dbc.NavItem(dbc.NavLink("Temperature", href="/tmp")),
                         dbc.NavItem(dbc.NavLink("Configurable", href="/conf"))],
                 brand="Covid-19 data",
                 brand_href="/",
