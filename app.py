@@ -14,7 +14,11 @@ texts = json.load(open("config/text_content.json"))
 
 # Importing and setting theme
 external_stylesheets = [dbc.themes.SIMPLEX]
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets, suppress_callback_exceptions=True)
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets, 
+    suppress_callback_exceptions=True,
+    meta_tags=[
+        {"name": "viewport", "content": "width=device-width, initial-scale=1"}
+    ])
 
 
 # Importing backends

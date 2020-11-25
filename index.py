@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 
-from app import app
+from app import app, co_da
 from apps import main, configurable, temperature
 
 
@@ -23,14 +23,12 @@ app.layout = html.Div(children=[
                 dark=True,
                 sticky="top"),
         dcc.Location(id='url', refresh=False),
-
-        dbc.Card(dbc.CardBody([
-                dbc.Container([
-                                html.Br(),
-                                html.Div(id="div:page-content"),
-                                html.Br(),
-                ], fluid=True)
-        ])),
+        html.Div(id="div:warning"),
+        dbc.Container([
+                        html.Br(),
+                        html.Div(id="div:page-content"),
+                        html.Br(),
+        ], fluid=True)
 ])
                 
 # Update the index
@@ -45,6 +43,14 @@ def display_page(path):
                 return configurable.layout
         else:
                 return html.Div([html.H1("Error 404: page {} not found".format(path))])
+
+# Update warning
+@app.callback(dash.dependencies.Output('div:warning', 'children'),
+              [dash.dependencies.Input('url', 'pathname')])
+def update_warning(path):
+        return dbc.Alert([
+                "Loaded dataset was last updated 19.10.2020"
+        ], color="warning") if "local file" == co_da.get_description() else None
 
 # Run webpage
 if __name__ == '__main__':
