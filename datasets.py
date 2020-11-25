@@ -91,7 +91,6 @@ class Covid_Data(Data_Handler):
 
     def get_iso(self, iso):
         '''Getts dataframe for spesific iso code'''
-        print("iso {}, ".format(iso))
         return self.data[iso == self.data["iso_code"]]
 
 

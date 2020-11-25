@@ -7,22 +7,30 @@ import plotly.graph_objects as go
 import pandas as pd
 
 from app import app
-from app import co_da
+from app import co_da, t_da
 
 from apps.tools import format_array
 
 layout = html.Div([
-        dcc.Graph(id='main:map'),
-
-
+        dbc.Row([
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3(id="main:header"),
+                                                dcc.Graph(id='main:map'),
+                                        ])
+                                )
+                        ]), width=12
+                ),
+        ]),
 
         html.Br(),
         dbc.Row([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Cases per million:"),
-                                                dcc.Graph(id='main:trend_pr_m_graph')
+                                                html.H3("Total cases"),
+                                                dcc.Graph(id='main:total_cases')
                                         ])
                                 )
                         ]), width=6
@@ -31,8 +39,8 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Deaths per million:"),
-                                                dcc.Graph(id='main:trend_death_pr_m_graph')
+                                                html.H3("Total deaths"),
+                                                dcc.Graph(id='main:total_deaths')
                                         ])
                                 )
                         ]), width=6
@@ -53,23 +61,21 @@ def update_map(iso_code):
                 z=iso_total
         )
 
-        fig = go.Figure(
+        return go.Figure(
                 data=c_map
         ).update_layout(
                 autosize=True,
-                margin=dict(t=0, b=0, l=0, r=0),
-
+                margin=dict(
+                        t=0, b=0, l=0, r=0),
                 geo = dict(
-                        showframe=False
-                ) 
+                        showframe=False)
         )
-
-        return fig
 
 
 @app.callback(
-        dash.dependencies.Output('main:trend_pr_m_graph', 'figure'),
-        dash.dependencies.Output('main:trend_death_pr_m_graph', 'figure'),
+        dash.dependencies.Output('main:total_cases', 'figure'),
+        dash.dependencies.Output('main:total_deaths', 'figure'),
+        dash.dependencies.Output('main:header', 'children'),
         dash.dependencies.Input('main:map', 'clickData'))
 def main_locations_per_m(value):
         '''Updates trend graph with one or several location trends'''
@@ -79,7 +85,10 @@ def main_locations_per_m(value):
                 selected_country = "NOR"
 
         lo_da = co_da.get_iso(selected_country)
+        
+        full_co_name = "Selected country: {}".format(lo_da["location"].values[0])
 
-        total_cases = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
-        total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths_per_million"]))
-        return total_cases, total_deaths
+        total_cases = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_cases"]))
+        total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths"]))
+
+        return total_cases, total_deaths, full_co_name
