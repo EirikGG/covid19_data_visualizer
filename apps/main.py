@@ -1,4 +1,4 @@
-import dash
+import dash, json
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -9,7 +9,7 @@ import pandas as pd
 from app import app
 from app import co_da, t_da
 
-from apps.tools import format_array, format_col
+from apps.tools import format_array, format_col, get_common
 
 layout = html.Div([
         dbc.Row([
@@ -100,6 +100,19 @@ layout = html.Div([
                         ]), width={"size": 5, "offset": 0},
                 ),
         ]),
+        html.Br(),
+        dbc.Row([
+                dbc.Col(
+                        html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Temperature"),
+                                                dcc.Graph(id='main:temperature')
+                                        ])
+                                )
+                        ]), width={"size": 10, "offset": 1},
+                )
+        ]), 
 ])
 
 
@@ -166,8 +179,26 @@ def main_info(value):
         cont = co_da.get_iso(selected_country)
         cont = cont[cont["date"].max() == cont["date"]]
 
-        print(cont.head())
+        with open("config/text_content.json", "r") as f:
+                selected_cols = json.load(f)["general_info"]
 
-        selected_columns = ("population", "handwashing_facilities", "gdp_per_capita", "aged_70_older", "life_expectancy", "median_age")
+        return ["{}: {}".format(format_col(col), *cont[col].values) for col in selected_cols]
+        
 
-        return ["{}: {}".format(format_col(col), *cont[col].values) for col in selected_columns]
+@app.callback(
+        dash.dependencies.Output('main:temperature', 'figure'),
+        dash.dependencies.Input('main:map', 'clickData'))
+def main_temp(location):
+        '''Updates trend graph with one location trends'''
+        try:
+                selected_country = value["points"][0]["location"]
+        except:
+                selected_country = "NOR"
+        location = co_da.get_loc_from_iso(selected_country)
+        tm_da_co  = t_da.get_location(location)         # Tmp data for a single location
+        avg = t_da.get_loc_group()
+
+        return go.Figure(data = (dict(name="Humidity", x=tm_da_co.index, y=tm_da_co["humidity"]), 
+                                dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]),
+                                dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"]), 
+                                dict(name="Average", x=avg.index, y=avg[location])))

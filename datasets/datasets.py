@@ -93,7 +93,9 @@ class Covid_Data(Data_Handler):
         '''Getts dataframe for spesific iso code'''
         return self.data[iso == self.data["iso_code"]]
 
-
+    def get_loc_from_iso(self, iso):
+        '''Returns full location name from iso code based on dataset'''
+        return self.get_iso(iso)["location"].values[0]
 
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
@@ -136,4 +138,4 @@ class Tmp_Data(Data_Handler):
 
 if __name__ == "__main__":
     d = Covid_Data()
-    print(d.get_total_by_iso())
+    print(d.get_loc_from_iso("NOR"))

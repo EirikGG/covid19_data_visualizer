@@ -105,14 +105,12 @@ def update_conf_scat(x_axis, y_axis, z_axis, date):
 
         # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
         if (x_axis and y_axis and not z_axis):
-                print("2d")
                 fig = go.Scatter(x=data[x_axis], 
                                 y=data[y_axis],
                                 mode="markers",
                                 text=data["location"],
                                 hoverinfo="text")
         elif (x_axis and y_axis and z_axis):
-                print("3d")
                 fig = go.Scatter3d(x=data[x_axis], 
                                 y=data[y_axis],
                                 z=data[z_axis],

@@ -1,3 +1,4 @@
 {
-    "description": "COVID-19 dataset from https://ourworldindata.org/coronavirus-source-data"
+    "description": "COVID-19 dataset from https://ourworldindata.org/coronavirus-source-data",
+    "general_info": ["population", "handwashing_facilities", "gdp_per_capita", "aged_70_older", "life_expectancy", "median_age"]
 }
