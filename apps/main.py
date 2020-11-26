@@ -137,12 +137,13 @@ layout = html.Div([
         dash.dependencies.Output('main:map', 'figure'),
         dash.dependencies.Input('url', 'pathname'))
 def update_map(iso_code):
-        print("User clicked country with iso code = \"{}\" ".format(iso_code))
         iso_total = co_da.get_total_by_iso()
 
         c_map = go.Choropleth(
                 locations=iso_total.index,
-                z=iso_total
+                z=iso_total,
+                text=[format_col(co_da.get_loc_from_iso(loc)) for loc in iso_total.index],
+                hoverinfo="text"
         )
 
         return go.Figure(
