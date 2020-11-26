@@ -135,7 +135,7 @@ layout = html.Div([
 # Update map
 @app.callback(
         dash.dependencies.Output('main:map', 'figure'),
-        dash.dependencies.Input('main:map', 'clickData'))
+        dash.dependencies.Input('url', 'pathname'))
 def update_map(iso_code):
         print("User clicked country with iso code = \"{}\" ".format(iso_code))
         iso_total = co_da.get_total_by_iso()
