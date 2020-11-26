@@ -12,6 +12,8 @@ from app import co_da, t_da
 
 from apps.tools import format_array, format_col, get_common
 
+width = 10
+
 layout = html.Div([
         dbc.Row([
                 dbc.Col(html.Div([

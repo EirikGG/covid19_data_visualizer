@@ -12,7 +12,7 @@ from app import co_da, t_da
 
 from apps.tools import format_array, get_common
 
-#####################  TMP Page  #######################
+
 layout = html.Div([
         dbc.Row([
                 dbc.Col(

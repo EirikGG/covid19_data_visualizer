@@ -18,7 +18,7 @@ layout = html.Div([
                 dbc.Col(
                         dbc.Card(
                                 dbc.CardBody([
-                                        html.H3("Configurable graph:"),
+                                        html.H3("Configurable scatter plot:"),
                                         html.Br(),
                                         dbc.Row([
                                                 dbc.Col([
@@ -59,27 +59,27 @@ layout = html.Div([
                 dbc.Col(
                         dbc.Card(
                                 dbc.CardBody([
-                                        html.H3("Cases per million:"),
-                                        dcc.Dropdown(id='conf:trend_pr_m_dropdown', 
-                                                options=format_array(co_da.get_locations()), 
-                                                value=['Norway', 'Sweden', 'Denmark'], 
-                                                multi=True),
-                                        dcc.Graph(id='conf:trend_pr_m_graph')
+                                        html.H3("Compare countries:"),
+                                        html.Br(),
+                                        dbc.Row([
+                                                dbc.Col([
+                                                        html.H6("Country:"),
+                                                        dcc.Dropdown(id='conf:trend_pr_m_dropdown', 
+                                                                options=format_array(co_da.get_locations()), 
+                                                                value=['Norway', 'Sweden', 'Denmark'], 
+                                                                multi=True),
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Column:"),
+                                                        dcc.Dropdown(id='conf:column_dropdown', 
+                                                                options=format_array(co_da.get_cols()),
+                                                                value="total_cases")                                                                                        
+                                                ]),
+                                        ]),
+                                        dcc.Graph(id='conf:trend')
                                 ])
-                        ), width={"size": 5, "offset": 1},
+                        ), width={"size": 10, "offset": 1},
                 ),
-                dbc.Col(
-                        dbc.Card(
-                                dbc.CardBody([
-                                        html.H3("Deaths per million:"),
-                                        dcc.Dropdown(id='conf:trend_death_pr_m_dropdown', 
-                                                options=format_array(co_da.get_locations()), 
-                                                value=['Norway', 'Sweden', 'Denmark'], 
-                                                multi=True),
-                                        dcc.Graph(id='conf:trend_death_pr_m_graph')
-                                ])
-                        ), width={"size": 5, "offset": 0},
-                )
         ]),
 ])
 
@@ -101,8 +101,6 @@ def update_conf_scat(x_axis, y_axis, z_axis, date):
 
         fig = go.Scatter()
 
-        print(x_axis, y_axis, z_axis)
-
         # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
         if (x_axis and y_axis and not z_axis):
                 fig = go.Scatter(x=data[x_axis], 
@@ -121,23 +119,13 @@ def update_conf_scat(x_axis, y_axis, z_axis, date):
         return go.Figure(fig), "Date: {}".format(date)
         
 @app.callback(
-        dash.dependencies.Output('conf:trend_pr_m_graph', 'figure'),
-        [dash.dependencies.Input('conf:trend_pr_m_dropdown', 'value')])
-def update_locations_pr_m_cases(locations):
+        dash.dependencies.Output('conf:trend', 'figure'),
+        dash.dependencies.Input('conf:trend_pr_m_dropdown', 'value'),
+        dash.dependencies.Input('conf:column_dropdown', 'value'))
+def conf_trend(locations, col):
         '''Updates trend graph with one or several location trends'''
         data = []
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
-                data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_cases_per_million"]))
-        return go.Figure(data = data)
-
-@app.callback(
-        dash.dependencies.Output('conf:trend_death_pr_m_graph', 'figure'),
-        [dash.dependencies.Input('conf:trend_death_pr_m_dropdown', 'value')])
-def update_locations_pr_m_deaths(locations):
-        '''Updates trend graph with one or several location trends'''
-        data = []
-        for location in (locations,) if str==type(locations) else locations:
-                lo_da = co_da.get_location(location)
-                data.append(dict(name=location, x=lo_da["date"], y=lo_da["total_deaths_per_million"]))
+                data.append(dict(name=location, x=lo_da["date"], y=lo_da[col]))
         return go.Figure(data = data)
