@@ -20,7 +20,7 @@ layout = html.Div([
                                                 dcc.Graph(id='main:map'),
                                         ])
                                 )
-                        ]), width=12
+                        ]), width={"size": 10, "offset": 1},
                 ),
         ]),
 
@@ -33,7 +33,7 @@ layout = html.Div([
                                                 dcc.Graph(id='main:total_cases')
                                         ])
                                 )
-                        ]), width=6
+                        ]), width={"size": 5, "offset": 1},
                 ),
                 
                 dbc.Col(html.Div([
@@ -43,7 +43,7 @@ layout = html.Div([
                                                 dcc.Graph(id='main:total_deaths')
                                         ])
                                 )
-                        ]), width=6
+                        ]), width={"size": 5, "offset": 0},
                 ),
         ]),
 
@@ -55,7 +55,7 @@ layout = html.Div([
                                                 
                                         ])
                                 )
-                        ]), width=12
+                        ]), width={"size": 10, "offset": 1},
                 ),
         ]),
 ])
