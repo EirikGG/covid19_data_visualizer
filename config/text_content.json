@@ -1,6 +1,5 @@
 {
     "description": "COVID-19 dataset from https://ourworldindata.org/coronavirus-source-data",
-    "general_info_cols1": ["population", "handwashing_facilities", "gdp_per_capita", "aged_70_older", "life_expectancy", "median_age", "female_smokers", "male_smokers", "extreme_poverty"],
     "general_info_cols": [
         {"col": "population", "unit": ""},
         {"col": "handwashing_facilities", "unit": ""},
@@ -11,5 +10,9 @@
         {"col": "female_smokers", "unit": ""},
         {"col": "male_smokers", "unit": ""},
         {"col": "extreme_poverty", "unit": "%"}
-    ]
+    ],
+    "warnings":{
+        "dataset": "Loaded dataset was last updated 19.10.2020",
+        "predictions": "Predictions are informed guesses and should treated as such"
+    }
 }

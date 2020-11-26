@@ -1,4 +1,4 @@
-import dash
+import dash, json
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -23,7 +23,10 @@ app.layout = html.Div(children=[
                 dark=True,
                 sticky="top"),
         dcc.Location(id='url', refresh=False),
-        html.Div(id="div:warning"),
+
+        html.Div(id="div:warning_dataset"),
+        html.Div(id="div:warning_predictions"),
+
         dbc.Container([
                         html.Br(),
                         html.Div(id="div:page-content"),
@@ -45,12 +48,23 @@ def display_page(path):
                 return html.Div([html.H1("Error 404: page {} not found".format(path))])
 
 # Update warning
-@app.callback(dash.dependencies.Output('div:warning', 'children'),
-              [dash.dependencies.Input('url', 'pathname')])
-def update_warning(path):
-        return dbc.Alert([
-                "Loaded dataset was last updated 19.10.2020"
-        ], color="warning") if "local file" == co_da.get_description() else None
+@app.callback(
+        dash.dependencies.Output('div:warning_dataset', 'children'),
+        dash.dependencies.Output('div:warning_predictions', 'children'),
+        dash.dependencies.Input('url', 'pathname'))
+def update_warnings(path):
+        with open("config/text_content.json", "r") as f:
+                warnings = json.load(f)["warnings"]
+
+                dataset = dbc.Alert([
+                        warnings["dataset"]
+                ], color="warning") if "local file" == co_da.get_description() else None
+
+                predictions = dbc.Alert([
+                        warnings["predictions"]
+                ], color="warning") if "/predictions" == path else None
+
+        return dataset, predictions
 
 # Run webpage
 if __name__ == '__main__':

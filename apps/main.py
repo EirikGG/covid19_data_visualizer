@@ -205,10 +205,11 @@ def main_info(click):
                 data = []
                 for e in selected_cols:
                         column_name = format_col(e["col"])
-                        unit = e["unit"]
 
                         value = cont[e["col"]].values[0]
                         value = round(value, 1) if not np.isnan(value) else "NaN"
+
+                        unit = e["unit"] if str != type(value) else ""
 
                         data.append("{}: {}{}".format(column_name, value, unit))
 
