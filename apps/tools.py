@@ -9,7 +9,11 @@ def format_array(arr):
         '''Formats the array in array(dict(label: element), dict(label: element)).
         Also capitalizes first letter and replaces underscore with spaces'''
         
-        return [{'label': item.replace("_", " ").capitalize() , 'value':item} for item in arr]
+        return [{'label': format_col(item), 'value':item} for item in arr]
+
+def format_col(col):
+        '''Takes colom values and replaces "_" with " " and capitalises'''
+        return col.replace("_", " ").capitalize()
         
 # The 3 following functions used for slider convertion:
 # https://stackoverflow.com/questions/51063191/date-slider-with-plotly-dash-does-not-work

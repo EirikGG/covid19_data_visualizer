@@ -9,7 +9,7 @@ import pandas as pd
 from app import app
 from app import co_da, t_da
 
-from apps.tools import format_array
+from apps.tools import format_array, format_col
 
 layout = html.Div([
         dbc.Row([
@@ -18,6 +18,60 @@ layout = html.Div([
                                         dbc.CardBody([
                                                 html.H3(id="main:header"),
                                                 dcc.Graph(id='main:map'),
+                                        ])
+                                )
+                        ]), width={"size": 10, "offset": 1},
+                ),
+        ]),
+
+        html.Br(),
+        dbc.Row([
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("General information"),
+                                                html.Br(),
+                                                dbc.Row([
+                                                        dbc.Col([
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info1"),
+                                                                        ])
+                                                                ),
+                                                                html.Br(),
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info2"),
+                                                                        ])
+                                                                ),
+                                                        ], width={"size": 4, "offset": 0}),
+                                                        dbc.Col([
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info3"),
+                                                                        ])
+                                                                ),
+                                                                html.Br(),
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info4"),
+                                                                        ])
+                                                                ),
+                                                        ], width={"size": 4, "offset": 0}),
+                                                        dbc.Col([
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info5"),
+                                                                        ])
+                                                                ),
+                                                                html.Br(),
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info6"),
+                                                                        ])
+                                                                ),
+                                                        ], width={"size": 4, "offset": 0}),
+                                                ])
                                         ])
                                 )
                         ]), width={"size": 10, "offset": 1},
@@ -46,19 +100,9 @@ layout = html.Div([
                         ]), width={"size": 5, "offset": 0},
                 ),
         ]),
-
-        html.Br(),
-        dbc.Row([
-                dbc.Col(html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
-                                                
-                                        ])
-                                )
-                        ]), width={"size": 10, "offset": 1},
-                ),
-        ]),
 ])
+
+
 
 # Update map
 @app.callback(
@@ -89,7 +133,7 @@ def update_map(iso_code):
         dash.dependencies.Output('main:total_deaths', 'figure'),
         dash.dependencies.Output('main:header', 'children'),
         dash.dependencies.Input('main:map', 'clickData'))
-def main_locations_per_m(value):
+def main_locations(value):
         '''Updates trend graph with one or several location trends'''
         try:
                 selected_country = value["points"][0]["location"]
@@ -104,3 +148,26 @@ def main_locations_per_m(value):
         total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths"]))
 
         return total_cases, total_deaths, full_co_name
+
+@app.callback(
+        dash.dependencies.Output('main:info1', 'children'),
+        dash.dependencies.Output('main:info2', 'children'),
+        dash.dependencies.Output('main:info3', 'children'),
+        dash.dependencies.Output('main:info4', 'children'),
+        dash.dependencies.Output('main:info5', 'children'),
+        dash.dependencies.Output('main:info6', 'children'),
+        dash.dependencies.Input('main:map', 'clickData'))
+def main_info(value):
+        try:
+                selected_country = value["points"][0]["location"]
+        except:
+                selected_country = "NOR"
+
+        cont = co_da.get_iso(selected_country)
+        cont = cont[cont["date"].max() == cont["date"]]
+
+        print(cont.head())
+
+        selected_columns = ("population", "handwashing_facilities", "gdp_per_capita", "aged_70_older", "life_expectancy", "median_age")
+
+        return ["{}: {}".format(format_col(col), *cont[col].values) for col in selected_columns]

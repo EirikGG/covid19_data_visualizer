@@ -15,7 +15,8 @@ app.layout = html.Div(children=[
         dbc.NavbarSimple(
                 children=[
                         dbc.NavItem(dbc.NavLink("Home", href="/")),
-                        dbc.NavItem(dbc.NavLink("Configurable", href="/conf"))],
+                        dbc.NavItem(dbc.NavLink("Predictions", href="/predictions")),
+                        dbc.NavItem(dbc.NavLink("Configurable", href="/configurable"))],
                 brand="Covid-19 data",
                 brand_href="/",
                 color="primary",
@@ -36,9 +37,9 @@ app.layout = html.Div(children=[
 def display_page(path):
         if '/' == path:
                 return main.layout
-        elif '/tmp' == path:
+        elif '/predictions' == path:
                 return temperature.layout
-        elif '/conf' == path:
+        elif '/configurable' == path:
                 return configurable.layout
         else:
                 return html.Div([html.H1("Error 404: page {} not found".format(path))])

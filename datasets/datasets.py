@@ -94,6 +94,7 @@ class Covid_Data(Data_Handler):
         return self.data[iso == self.data["iso_code"]]
 
 
+
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
     https://www.kaggle.com/ksudhir/weather-data-countries-covid19'''

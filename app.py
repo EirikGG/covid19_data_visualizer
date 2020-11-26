@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn import preprocessing
 
-from datasets import Covid_Data, Tmp_Data
+from datasets.datasets import Covid_Data, Tmp_Data
 
 
 
