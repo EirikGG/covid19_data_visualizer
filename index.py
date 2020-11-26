@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 from app import app, co_da
-from apps import main, configurable, temperature
+from apps import main, configurable, predictions
 
 
 server = app.server
@@ -38,7 +38,7 @@ def display_page(path):
         if '/' == path:
                 return main.layout
         elif '/predictions' == path:
-                return temperature.layout
+                return predictions.layout
         elif '/configurable' == path:
                 return configurable.layout
         else:

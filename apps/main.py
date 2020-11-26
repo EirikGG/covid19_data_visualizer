@@ -5,6 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
 
 from app import app
 from app import co_da, t_da
@@ -20,7 +21,16 @@ layout = html.Div([
                                                 dcc.Graph(id='main:map'),
                                         ])
                                 )
-                        ]), width={"size": 10, "offset": 1},
+                        ]), width={"size": 5, "offset": 1},
+                ),
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("Total cases"),
+                                                dcc.Graph(id='main:total_cases')
+                                        ])
+                                )
+                        ]), width={"size": 5, "offset": 0},
                 ),
         ]),
 
@@ -44,21 +54,20 @@ layout = html.Div([
                                                                                 html.H5(id="main:info2"),
                                                                         ])
                                                                 ),
-                                                        ], width={"size": 4, "offset": 0}),
-                                                        dbc.Col([
+                                                                html.Br(),
                                                                 dbc.Card(
                                                                         dbc.CardBody([
                                                                                 html.H5(id="main:info3"),
                                                                         ])
                                                                 ),
-                                                                html.Br(),
+                                                        ], width={"size": 4, "offset": 0}),
+                                                        dbc.Col([
                                                                 dbc.Card(
                                                                         dbc.CardBody([
                                                                                 html.H5(id="main:info4"),
                                                                         ])
                                                                 ),
-                                                        ], width={"size": 4, "offset": 0}),
-                                                        dbc.Col([
+                                                                html.Br(),
                                                                 dbc.Card(
                                                                         dbc.CardBody([
                                                                                 html.H5(id="main:info5"),
@@ -68,6 +77,25 @@ layout = html.Div([
                                                                 dbc.Card(
                                                                         dbc.CardBody([
                                                                                 html.H5(id="main:info6"),
+                                                                        ])
+                                                                ),
+                                                        ], width={"size": 4, "offset": 0}),
+                                                        dbc.Col([
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info7"),
+                                                                        ])
+                                                                ),
+                                                                html.Br(),
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info8"),
+                                                                        ])
+                                                                ),
+                                                                html.Br(),
+                                                                dbc.Card(
+                                                                        dbc.CardBody([
+                                                                                html.H5(id="main:info9"),
                                                                         ])
                                                                 ),
                                                         ], width={"size": 4, "offset": 0}),
@@ -83,8 +111,8 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Total cases"),
-                                                dcc.Graph(id='main:total_cases')
+                                                html.H3("Total deaths"),
+                                                dcc.Graph(id='main:total_deaths')
                                         ])
                                 )
                         ]), width={"size": 5, "offset": 1},
@@ -93,26 +121,13 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Total deaths"),
-                                                dcc.Graph(id='main:total_deaths')
+                                                html.H3("Total tests"),
+                                                dcc.Graph(id='main:total_tests')
                                         ])
                                 )
                         ]), width={"size": 5, "offset": 0},
                 ),
         ]),
-        html.Br(),
-        dbc.Row([
-                dbc.Col(
-                        html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
-                                                html.H3("Temperature"),
-                                                dcc.Graph(id='main:temperature')
-                                        ])
-                                )
-                        ]), width={"size": 10, "offset": 1},
-                )
-        ]), 
 ])
 
 
@@ -144,6 +159,7 @@ def update_map(iso_code):
 @app.callback(
         dash.dependencies.Output('main:total_cases', 'figure'),
         dash.dependencies.Output('main:total_deaths', 'figure'),
+        dash.dependencies.Output('main:total_tests', 'figure'),
         dash.dependencies.Output('main:header', 'children'),
         dash.dependencies.Input('main:map', 'clickData'))
 def main_locations(value):
@@ -159,8 +175,9 @@ def main_locations(value):
 
         total_cases = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_cases"]))
         total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths"]))
+        total_tests = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_tests"]))
 
-        return total_cases, total_deaths, full_co_name
+        return total_cases, total_deaths, total_tests, full_co_name
 
 @app.callback(
         dash.dependencies.Output('main:info1', 'children'),
@@ -169,10 +186,13 @@ def main_locations(value):
         dash.dependencies.Output('main:info4', 'children'),
         dash.dependencies.Output('main:info5', 'children'),
         dash.dependencies.Output('main:info6', 'children'),
+        dash.dependencies.Output('main:info7', 'children'),
+        dash.dependencies.Output('main:info8', 'children'),
+        dash.dependencies.Output('main:info9', 'children'),
         dash.dependencies.Input('main:map', 'clickData'))
-def main_info(value):
+def main_info(click):
         try:
-                selected_country = value["points"][0]["location"]
+                selected_country = click["points"][0]["location"]
         except:
                 selected_country = "NOR"
 
@@ -180,25 +200,16 @@ def main_info(value):
         cont = cont[cont["date"].max() == cont["date"]]
 
         with open("config/text_content.json", "r") as f:
-                selected_cols = json.load(f)["general_info"]
+                selected_cols = json.load(f)["general_info_cols"]
+                data = []
+                for e in selected_cols:
+                        column_name = format_col(e["col"])
+                        unit = e["unit"]
 
-        return ["{}: {}".format(format_col(col), *cont[col].values) for col in selected_cols]
-        
+                        value = cont[e["col"]].values[0]
+                        value = round(value, 1) if not np.isnan(value) else "NaN"
 
-@app.callback(
-        dash.dependencies.Output('main:temperature', 'figure'),
-        dash.dependencies.Input('main:map', 'clickData'))
-def main_temp(location):
-        '''Updates trend graph with one location trends'''
-        try:
-                selected_country = value["points"][0]["location"]
-        except:
-                selected_country = "NOR"
-        location = co_da.get_loc_from_iso(selected_country)
-        tm_da_co  = t_da.get_location(location)         # Tmp data for a single location
-        avg = t_da.get_loc_group()
+                        data.append("{}: {}{}".format(column_name, value, unit))
 
-        return go.Figure(data = (dict(name="Humidity", x=tm_da_co.index, y=tm_da_co["humidity"]), 
-                                dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]),
-                                dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"]), 
-                                dict(name="Average", x=avg.index, y=avg[location])))
+        return data
+

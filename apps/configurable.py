@@ -51,7 +51,7 @@ layout = html.Div([
                                         ),
                                         dcc.Graph(id='conf:trend_graph'),
                                 ])
-                        ), width=12
+                        ), width={"size": 10, "offset": 1},
                 )
         ], align='center'),
         html.Br(),
@@ -66,7 +66,7 @@ layout = html.Div([
                                                 multi=True),
                                         dcc.Graph(id='conf:trend_pr_m_graph')
                                 ])
-                        ), width=6
+                        ), width={"size": 5, "offset": 1},
                 ),
                 dbc.Col(
                         dbc.Card(
@@ -78,7 +78,7 @@ layout = html.Div([
                                                 multi=True),
                                         dcc.Graph(id='conf:trend_death_pr_m_graph')
                                 ])
-                        ), width=6
+                        ), width={"size": 5, "offset": 0},
                 )
         ]),
 ])

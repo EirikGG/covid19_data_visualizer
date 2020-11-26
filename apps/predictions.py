@@ -26,7 +26,8 @@ layout = html.Div([
                                                 dcc.Graph(id='tmp:trend_graph')
                                         ])
                                 )
-                        ]), width=10)
+                        ]), width={"size": 10, "offset": 0},
+                )
         ], justify='center'), 
 ])
 
