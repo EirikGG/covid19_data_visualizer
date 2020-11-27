@@ -1,4 +1,4 @@
-import dash, json
+import dash, json, math
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -43,65 +43,7 @@ layout = html.Div([
                                         dbc.CardBody([
                                                 html.H3("General information"),
                                                 html.Br(),
-                                                dbc.Row([
-                                                        dbc.Col([
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info1"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info2"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info3"),
-                                                                        ])
-                                                                ),
-                                                        ], width={"size": 4, "offset": 0}),
-                                                        dbc.Col([
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info4"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info5"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info6"),
-                                                                        ])
-                                                                ),
-                                                        ], width={"size": 4, "offset": 0}),
-                                                        dbc.Col([
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info7"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info8"),
-                                                                        ])
-                                                                ),
-                                                                html.Br(),
-                                                                dbc.Card(
-                                                                        dbc.CardBody([
-                                                                                html.H5(id="main:info9"),
-                                                                        ])
-                                                                ),
-                                                        ], width={"size": 4, "offset": 0}),
-                                                ])
+                                                html.Div(id="main:info"),
                                         ])
                                 )
                         ]), width={"size": 10, "offset": 1},
@@ -184,15 +126,7 @@ def main_locations(value):
         return total_cases, total_deaths, total_tests, full_co_name
 
 @app.callback(
-        dash.dependencies.Output('main:info1', 'children'),
-        dash.dependencies.Output('main:info2', 'children'),
-        dash.dependencies.Output('main:info3', 'children'),
-        dash.dependencies.Output('main:info4', 'children'),
-        dash.dependencies.Output('main:info5', 'children'),
-        dash.dependencies.Output('main:info6', 'children'),
-        dash.dependencies.Output('main:info7', 'children'),
-        dash.dependencies.Output('main:info8', 'children'),
-        dash.dependencies.Output('main:info9', 'children'),
+        dash.dependencies.Output('main:info', 'children'),
         dash.dependencies.Input('main:map', 'clickData'))
 def main_info(click):
         try:
@@ -205,16 +139,33 @@ def main_info(click):
 
         with open("config/text_content.json", "r") as f:
                 selected_cols = json.load(f)["general_info_cols"]
-                data = []
-                for e in selected_cols:
-                        column_name = format_col(e["col"])
 
-                        value = cont[e["col"]].values[0]
-                        value = round(value, 1) if not np.isnan(value) else "NaN"
+                length = len(selected_cols)
+                n = length-1
 
-                        unit = e["unit"] if str != type(value) else ""
+                rows, res_rows = math.ceil((length/3)), []
+                for row in range(rows):
+                        cols, res_cols = 3 if (row+1<rows or n+2>3) else length%3, []
+                        for col in range(cols):
+                                e = selected_cols[n]
+                                column_name = format_col(e["col"])
 
-                        data.append("{}: {}{}".format(column_name, value, unit))
+                                value = cont[e["col"]].values[0]
+                                value = round(value, 1) if not np.isnan(value) else "NaN"
 
-        return data
+                                unit = e["unit"] if str != type(value) else ""
 
+                                res_cols.append(
+                                        dbc.Col([
+                                                dbc.Card(
+                                                        dbc.CardBody([
+                                                                html.H5("{}: {}{}".format(column_name, value, unit)),
+                                                        ])
+                                                ),
+                                                html.Br()]
+                                        , width={"size": 4, "offset": 0})
+                                )
+                                n -= 1
+                        res_rows.append(dbc.Row(res_cols))
+
+        return res_rows
