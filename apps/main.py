@@ -141,10 +141,11 @@ layout = html.Div([
 def update_map(iso_code):
         iso_total = co_da.get_total_by_iso()
 
+        #       text=[format_col(co_da.get_loc_from_iso(loc)) for loc in iso_total.index],
         c_map = go.Choropleth(
-                locations=iso_total.index,
+                locations=iso_total.index.get_level_values("iso_code"),
                 z=iso_total,
-                text=[format_col(co_da.get_loc_from_iso(loc)) for loc in iso_total.index],
+                text=iso_total.index.get_level_values("location"),
                 hoverinfo="text"
         )
 

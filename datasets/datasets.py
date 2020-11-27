@@ -85,9 +85,8 @@ class Covid_Data(Data_Handler):
     def get_total_by_iso(self):
         '''Filters data and returns total cases and iso codes'''
         data_filtered = self.data[(self.data["location"] != "World") &
-                                (self.data["location"] != "International") &
-                                (self.data["date"] == self.get_dates().max())]
-        return data_filtered.groupby("iso_code")["total_deaths"].max()
+                                (self.data["location"] != "International")]
+        return data_filtered.groupby(["iso_code", "location"])["total_deaths"].max("date")
 
     def get_iso(self, iso):
         '''Getts dataframe for spesific iso code'''

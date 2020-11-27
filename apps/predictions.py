@@ -9,7 +9,7 @@ import numpy as np
 
 from app import app
 from app import co_da, t_da
-
+from sklearn.linear_model import Lasso
 from apps.tools import format_array, get_common
 
 
@@ -20,10 +20,10 @@ layout = html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3("Total cases for"),
-                                                dcc.Dropdown(id='tmp:trend_dropdown', 
+                                                dcc.Dropdown(id='pred:loc_dropdown', 
                                                         options=format_array(get_common(co_da.get_locations(), t_da.get_locations())), 
                                                         value='Norway'),
-                                                dcc.Graph(id='tmp:trend_graph')
+                                                dcc.Graph(id='pred:table')
                                         ])
                                 )
                         ]), width={"size": 10, "offset": 0},
@@ -32,14 +32,15 @@ layout = html.Div([
 ])
 
 @app.callback(
-        dash.dependencies.Output('tmp:trend_graph', 'figure'),
-        [dash.dependencies.Input('tmp:trend_dropdown', 'value')])
-def update_comp_tmp(location):
-        '''Updates trend graph with one or several location trends'''
-        tm_da_co  = t_da.get_location(location)         # Tmp data for a single location
-        avg = t_da.get_loc_group()
+        dash.dependencies.Output('pred:table', 'figure'),
+        [dash.dependencies.Input('pred:loc_dropdown', 'value')])
+def pred_table(location):
+        features = ['new_tests', 'total_tests', 'new_tests_smoothed', 'tests_per_case', 'positive_rate', 
+                        'tests_units', 'stringency_index', 'population', 'population_density', 'median_age', 'aged_65_older',
+                        'aged_70_older', 'gdp_per_capita', 'extreme_poverty', 'cardiovasc_death_rate', 'diabetes_prevalence', 
+                        'female_smokers', 'male_smokers', 'handwashing_facilities', 'hospital_beds_per_thousand',
+                        'life_expectancy', 'human_development_index']
 
-        return go.Figure(data = (dict(name="Humidity", x=tm_da_co.index, y=tm_da_co["humidity"]), 
-                                dict(name="Max temperature[C]", x=tm_da_co.index, y=tm_da_co["maxtempC"]),
-                                dict(name="Min temperature[C]", x=tm_da_co.index, y=tm_da_co["mintempC"]), 
-                                dict(name="Average", x=avg.index, y=avg[location])))
+        
+        
+        return go.Figure(go.Table())
