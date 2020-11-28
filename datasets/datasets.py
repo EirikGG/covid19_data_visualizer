@@ -109,7 +109,7 @@ class Covid_Data(Data_Handler):
         lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])
 
-        df = pd.DataFrame(dict(features=features, coeff=lasso_model.coef_)).sort_values("coeff", ascending=False)
+        df = pd.DataFrame(dict(features=features, coeff=lasso_model.coef_.round(2))).sort_values("coeff", ascending=False)
         return df[0 != df["coeff"]]
 
     def get_tot_pr_m_cont(self):
