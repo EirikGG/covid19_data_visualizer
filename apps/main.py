@@ -10,7 +10,7 @@ import numpy as np
 from app import app
 from app import co_da, t_da
 
-from apps.tools import format_array, format_col, get_common
+from apps.tools import format_array, format_col, get_common, format_numbers
 
 width = 10
 
@@ -41,20 +41,6 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("General information"),
-                                                html.Br(),
-                                                html.Div(id="main:info"),
-                                        ])
-                                )
-                        ]), width={"size": 10, "offset": 1},
-                ),
-        ]),
-
-        html.Br(),
-        dbc.Row([
-                dbc.Col(html.Div([
-                                dbc.Card(
-                                        dbc.CardBody([
                                                 html.H3("Total deaths"),
                                                 dcc.Graph(id='main:total_deaths')
                                         ])
@@ -70,6 +56,20 @@ layout = html.Div([
                                         ])
                                 )
                         ]), width={"size": 5, "offset": 0},
+                ),
+        ]),
+
+        html.Br(),
+        dbc.Row([
+                dbc.Col(html.Div([
+                                dbc.Card(
+                                        dbc.CardBody([
+                                                html.H3("General information"),
+                                                html.Br(),
+                                                html.Div(id="main:info"),
+                                        ])
+                                )
+                        ]), width={"size": 10, "offset": 1},
                 ),
         ]),
 ])
@@ -141,17 +141,17 @@ def main_info(click):
                 selected_cols = json.load(f)["general_info_cols"]
 
                 length = len(selected_cols)
-                n = length-1
+                n = 0
 
                 rows, res_rows = math.ceil((length/3)), []
                 for row in range(rows):
-                        cols, res_cols = 3 if (row+1<rows or n+2>3) else length%3, []
+                        cols, res_cols = 3 if (row+1<rows or n+2<3) else length%3, []
                         for col in range(cols):
                                 e = selected_cols[n]
                                 column_name = format_col(e["col"])
 
                                 value = cont[e["col"]].values[0]
-                                value = round(value, 1) if not np.isnan(value) else "NaN"
+                                value = format_numbers(round(value, 1)) if not np.isnan(value) else "NaN"
 
                                 unit = e["unit"] if str != type(value) else ""
 
@@ -165,7 +165,7 @@ def main_info(click):
                                                 html.Br()]
                                         , width={"size": 4, "offset": 0})
                                 )
-                                n -= 1
+                                n += 1
                         res_rows.append(dbc.Row(res_cols))
 
         return res_rows

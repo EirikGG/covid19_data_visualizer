@@ -9,7 +9,15 @@
         {"col": "median_age", "unit": "years"},
         {"col": "female_smokers", "unit": ""},
         {"col": "male_smokers", "unit": ""},
-        {"col": "extreme_poverty", "unit": "%"}
+        {"col": "extreme_poverty", "unit": "%"},
+        {"col": "total_tests", "unit": ""},
+        {"col": "tests_per_case", "unit": ""},
+        {"col": "positive_rate", "unit": ""},
+        {"col": "population_density", "unit": ""},
+        {"col": "cardiovasc_death_rate", "unit": ""},
+        {"col": "diabetes_prevalence", "unit": ""},
+        {"col": "hospital_beds_per_thousand", "unit": ""},
+        {"col": "human_development_index", "unit": ""}
     ],
     "warnings":{
         "dataset": "Loaded dataset was last updated 19.10.2020",

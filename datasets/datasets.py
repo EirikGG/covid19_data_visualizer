@@ -1,13 +1,15 @@
-# Import pandas for handeling data
-import pandas as pd
 import json, copy
+
+import pandas as pd
+
+from sklearn.linear_model import Lasso
 
 class Data_Handler(object):
     paths       = None          # Paths and urls to find datasets
     data        = None          # Dataset
     description = None          # Status of dataset e.g. local file or web download
 
-    def __init__(self, url_key, url_path="config/dataset_paths.json"):
+    def __init__(self, url_key, url_path="config/dataset.json"):
         self.paths = self.do_load_urls(url_path)
         self.data, self.description = self.load_data(self.paths[url_key])
 
@@ -29,7 +31,7 @@ class Data_Handler(object):
 
     def do_load_urls(self, path):
         '''Loads json file from path parameter'''
-        return json.load(open(path))
+        return json.load(open(path))["paths"]
 
     def get_urls(self):
         '''Returns a deepcopy of paths dict'''
@@ -96,6 +98,20 @@ class Covid_Data(Data_Handler):
         '''Returns full location name from iso code based on dataset'''
         return self.get_iso(iso)["location"].values[0]
 
+    def get_lasso_regression(self, feature):
+        with open("config/dataset.json", "r") as f:
+                features = json.load(f)["regression"]["features"]
+
+        features.remove(feature)
+        data_dropna = self.data.dropna()
+
+        lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000)
+        lasso_model.fit(data_dropna[features], data_dropna[feature])
+
+        df = pd.DataFrame(dict(features=features, coeff=lasso_model.coef_)).sort_values("coeff", ascending=False)
+        return df[0 != df["coeff"]]
+
+
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
     https://www.kaggle.com/ksudhir/weather-data-countries-covid19'''
@@ -132,9 +148,9 @@ class Tmp_Data(Data_Handler):
         avg.index = pd.to_datetime(avg.index)
             
         return avg
-
+ 
 
 
 if __name__ == "__main__":
     d = Covid_Data()
-    print(d.get_loc_from_iso("NOR"))
+    print(d.get_lasso_regression())

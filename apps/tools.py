@@ -35,3 +35,10 @@ def format_marks(dTimes):
 def get_common(col1, col2):
         '''Takes twp collumns and returns common elemtents'''
         return np.intersect1d(col1, col2)
+
+def format_numbers(num):
+        '''Takes a number and converts it to a string and adds commas as thousand separator'''
+        return f'{num:,}'
+
+if __name__ == "__main__":
+    print(format_numbers(10000000))

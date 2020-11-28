@@ -1,4 +1,4 @@
-import dash
+import dash, json
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -9,7 +9,6 @@ import numpy as np
 
 from app import app
 from app import co_da, t_da
-from sklearn.linear_model import Lasso
 from apps.tools import format_array, get_common
 
 
@@ -19,10 +18,14 @@ layout = html.Div([
                         html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Total cases for"),
-                                                dcc.Dropdown(id='pred:loc_dropdown', 
-                                                        options=format_array(get_common(co_da.get_locations(), t_da.get_locations())), 
-                                                        value='Norway'),
+                                                html.H3("Feature ranking"),
+                                                dbc.Col([
+                                                        html.H6("Feature:"),
+                                                        dcc.Dropdown(id='pred:feature', 
+                                                                options=format_array(json.load(open("config/dataset.json"))["regression"]["features"]),
+                                                                value="total_cases"
+                                                        )
+                                                ]),
                                                 dcc.Graph(id='pred:table')
                                         ])
                                 )
@@ -33,14 +36,13 @@ layout = html.Div([
 
 @app.callback(
         dash.dependencies.Output('pred:table', 'figure'),
-        [dash.dependencies.Input('pred:loc_dropdown', 'value')])
-def pred_table(location):
-        features = ['new_tests', 'total_tests', 'new_tests_smoothed', 'tests_per_case', 'positive_rate', 
-                        'tests_units', 'stringency_index', 'population', 'population_density', 'median_age', 'aged_65_older',
-                        'aged_70_older', 'gdp_per_capita', 'extreme_poverty', 'cardiovasc_death_rate', 'diabetes_prevalence', 
-                        'female_smokers', 'male_smokers', 'handwashing_facilities', 'hospital_beds_per_thousand',
-                        'life_expectancy', 'human_development_index']
-
+        dash.dependencies.Input('pred:feature', 'value'))
+def pred_table(value):
+        data = co_da.get_lasso_regression(value)
         
+        tab = go.Table(
+                header=dict(values=list(data.columns)),
+                cells=dict(values=[data["features"], data["coeff"]]),
+        )
         
-        return go.Figure(go.Table())
+        return go.Figure(tab)
