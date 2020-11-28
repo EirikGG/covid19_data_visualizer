@@ -9,7 +9,7 @@ import numpy as np
 
 from app import app
 from app import co_da, t_da
-from apps.tools import format_array, get_common
+from apps.tools import format_array, get_common, format_cols
 
 
 layout = html.Div([
@@ -38,11 +38,11 @@ layout = html.Div([
         dash.dependencies.Output('pred:table', 'figure'),
         dash.dependencies.Input('pred:feature', 'value'))
 def pred_table(value):
-        data = co_da.get_lasso_regression(value)
+        data = co_da.get_feature_ranking(value)
         
         tab = go.Table(
-                header=dict(values=list(data.columns)),
-                cells=dict(values=[data["features"], data["coeff"]]),
+                header=dict(values=list(format_cols(data.columns))),
+                cells=dict(values=[format_cols(data["features"]), data["coeff"]]),
         )
         
         return go.Figure(tab)

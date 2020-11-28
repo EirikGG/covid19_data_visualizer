@@ -98,14 +98,14 @@ class Covid_Data(Data_Handler):
         '''Returns full location name from iso code based on dataset'''
         return self.get_iso(iso)["location"].values[0]
 
-    def get_lasso_regression(self, feature):
+    def get_feature_ranking(self, feature):
         with open("config/dataset.json", "r") as f:
                 features = json.load(f)["regression"]["features"]
 
         features.remove(feature)
         data_dropna = self.data.dropna()
 
-        lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000)
+        lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])
 
         df = pd.DataFrame(dict(features=features, coeff=lasso_model.coef_)).sort_values("coeff", ascending=False)

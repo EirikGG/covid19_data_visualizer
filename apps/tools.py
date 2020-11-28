@@ -14,6 +14,10 @@ def format_array(arr):
 def format_col(col):
         '''Takes colom values and replaces "_" with " " and capitalises'''
         return col.replace("_", " ").capitalize()
+
+def format_cols(cols):
+        '''Formats an array of strings'''
+        return [format_col(col) for col in cols]
         
 # The 3 following functions used for slider convertion:
 # https://stackoverflow.com/questions/51063191/date-slider-with-plotly-dash-does-not-work

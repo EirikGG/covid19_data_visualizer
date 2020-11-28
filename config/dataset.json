@@ -1,7 +1,7 @@
 {
     "paths" : {
         "covid-19": [
-            {"path": "https://covid.ourworldindata.org/data/owid-covid-data.csv", "description":"web download"},
+            {"path": "https://covid.ourworldindata.or g/data/owid-covid-data.csv", "description":"web download"},
             {"path": "datasets/owid-covid-data_2020-10-19.csv", "description": "local file"}
         ],
 
@@ -12,8 +12,8 @@
     "regression" : {
         "features" : [
             "new_tests", "total_tests", "new_tests_smoothed", "tests_per_case", "positive_rate", 
-            "stringency_index", "population", "population_density", "median_age", "aged_65_older",
-            "aged_70_older", "gdp_per_capita", "extreme_poverty", "cardiovasc_death_rate", "diabetes_prevalence", 
+            "population", "population_density", "median_age", "aged_65_older", "aged_70_older",
+            "gdp_per_capita", "extreme_poverty", "cardiovasc_death_rate", "diabetes_prevalence", 
             "female_smokers", "male_smokers", "handwashing_facilities", "hospital_beds_per_thousand",
             "life_expectancy", "human_development_index", "total_cases", "total_deaths"
         ]
