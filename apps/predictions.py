@@ -18,9 +18,8 @@ layout = html.Div([
                         html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Feature ranking"),
+                                                html.H3("Feature ranking using lasso regression"),
                                                 dbc.Col([
-                                                        html.H6("Feature:"),
                                                         dcc.Dropdown(id='pred:feature', 
                                                                 options=format_array(json.load(open("config/dataset.json"))["regression"]["features"]),
                                                                 value="total_cases"

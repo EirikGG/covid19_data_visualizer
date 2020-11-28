@@ -23,26 +23,4 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
 
 # Importing backends
 co_da = Covid_Data()    # Covid data
-t_da = Tmp_Data()       # Temperature data                
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+t_da = Tmp_Data()       # Temperature data

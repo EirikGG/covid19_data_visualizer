@@ -5,7 +5,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 
 from app import app, co_da
-from apps import main, configurable, predictions
+from apps import main, configurable, predictions, continent
 
 
 server = app.server
@@ -15,6 +15,7 @@ app.layout = html.Div(children=[
         dbc.NavbarSimple(
                 children=[
                         dbc.NavItem(dbc.NavLink("Home", href="/")),
+                        dbc.NavItem(dbc.NavLink("Continent", href="/continent")),
                         dbc.NavItem(dbc.NavLink("Predictions", href="/predictions")),
                         dbc.NavItem(dbc.NavLink("Configurable", href="/configurable"))],
                 brand="Covid-19 data",
@@ -40,6 +41,8 @@ app.layout = html.Div(children=[
 def display_page(path):
         if '/' == path:
                 return main.layout
+        elif '/continent' == path:
+                return continent.layout
         elif '/predictions' == path:
                 return predictions.layout
         elif '/configurable' == path:

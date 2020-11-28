@@ -111,6 +111,17 @@ class Covid_Data(Data_Handler):
         df = pd.DataFrame(dict(features=features, coeff=lasso_model.coef_)).sort_values("coeff", ascending=False)
         return df[0 != df["coeff"]]
 
+    def get_tot_pr_m_cont(self):
+        '''Return data per million for continents'''
+        return self.data.groupby(["continent", "location"]).max("date").sum(level="continent")
+
+    def get_cont(self, cont):
+        '''Filters data and returns data for each continent'''
+        return self.data.groupby(["continent", "date"]).sum().xs(cont, level="continent")
+
+    def get_conts(self):
+        '''Returns all continents'''
+        return self.data["continent"].dropna().unique()
 
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
@@ -153,4 +164,4 @@ class Tmp_Data(Data_Handler):
 
 if __name__ == "__main__":
     d = Covid_Data()
-    print(d.get_lasso_regression())
+    print(d.get_cont("Europe"))
