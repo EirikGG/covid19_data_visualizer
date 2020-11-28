@@ -1,4 +1,4 @@
-import dash
+import dash, json
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -50,7 +50,7 @@ layout = html.Div([
                                             dbc.Col([
                                                     html.H6("Column:"),
                                                     dcc.Dropdown(id='cont:col_dropdown', 
-                                                            options=format_array(co_da.get_cols()), 
+                                                            options=format_array(json.load(open("config/dataset.json"))["cont"]["cols"]), 
                                                             value="total_cases"),
                                             ]),
                                         ]),

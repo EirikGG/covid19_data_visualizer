@@ -37,6 +37,10 @@ layout = html.Div([
         dash.dependencies.Output('pred:table', 'figure'),
         dash.dependencies.Input('pred:feature', 'value'))
 def pred_table(value):
+        tmp_feature_name = "average_temperature"
+        if not tmp_feature_name in co_da.get_data():
+                co_da.add_tmp(tmp_feature_name, t_da.get_avg)
+        
         data = co_da.get_feature_ranking(value)
         
         tab = go.Table(

@@ -1,6 +1,7 @@
 import json, copy
 
 import pandas as pd
+import numpy as np
 
 from sklearn.linear_model import Lasso
 
@@ -104,7 +105,7 @@ class Covid_Data(Data_Handler):
 
         features.remove(feature)
         
-        data_dropna = self.data.fillna(self.data.mean())
+        data_dropna = self.data.fillna(self.data.mean(numeric_only=True))
 
         lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])
@@ -123,6 +124,15 @@ class Covid_Data(Data_Handler):
     def get_conts(self):
         '''Returns all continents'''
         return self.data["continent"].dropna().unique()
+
+    def add_tmp(self, name, tmp_func):
+        locs = self.data["location"].unique()
+        avgs = pd.DataFrame(dict(tmp=[tmp_func(loc) for loc in locs]), index=locs)
+
+        self.data[name] = self.data["location"]
+        self.data[name] = self.data[name].apply(lambda x: avgs.loc[x].values[0])
+
+        return self.data
 
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
@@ -160,9 +170,25 @@ class Tmp_Data(Data_Handler):
         avg.index = pd.to_datetime(avg.index)
             
         return avg
+
+    def get_avg(self, loc):
+        '''Returns average temperature for location'''
+        w_dat = self.get_location(loc)
+        if not w_dat.empty:
+            w_dat["avg"] = (w_dat["maxtempC"] + w_dat["mintempC"]) / 2
+            return w_dat["avg"].mean()
+        else:
+            return np.NaN
+        
+            
+
  
 
 
 if __name__ == "__main__":
-    d = Covid_Data()
-    print(d.get_cont("Europe"))
+    c = Covid_Data()
+    t = Tmp_Data()
+    
+    new = c.add_tmp("tmp", t.get_avg)
+
+    print(new["Norway" == new["location"]])
