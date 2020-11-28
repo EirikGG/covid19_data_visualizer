@@ -103,7 +103,8 @@ class Covid_Data(Data_Handler):
                 features = json.load(f)["regression"]["features"]
 
         features.remove(feature)
-        data_dropna = self.data.dropna()
+        
+        data_dropna = self.data.fillna(self.data.mean())
 
         lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])

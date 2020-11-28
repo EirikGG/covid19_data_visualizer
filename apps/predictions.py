@@ -10,7 +10,7 @@ import numpy as np
 from app import app
 from app import co_da, t_da
 from apps.tools import format_array, get_common, format_cols
-
+ 
 
 layout = html.Div([
         dbc.Row([
