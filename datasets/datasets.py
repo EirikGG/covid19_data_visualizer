@@ -1,4 +1,4 @@
-import json, copy
+import json, copy, math
 
 import pandas as pd
 import numpy as np
@@ -172,6 +172,7 @@ class Covid_Data(Data_Handler):
         def func(x, a, b, c, d):
             return a * (x ** 3) + b * (x ** 2) + c * x + d
 
+
         params = curve_fit(
             func,
             date_ind_ex.index.astype(float).values,
@@ -184,7 +185,90 @@ class Covid_Data(Data_Handler):
 
         result.index = tmp_date
 
+        result[0>result[col]] = 0
+
         return result.tail(days)
+
+
+    def rss(self, y, y_hat):
+        return sum([(y_i-y_ihat)**2 for y_i, y_ihat in zip(y, y_hat)])
+        
+    def create_feature_matrix(self, input_attr_col, powers):
+        data_frame = pd.DataFrame()
+        for i in powers:
+            data_frame["h" + str(i)] = np.power(input_attr_col, i)
+        return data_frame
+
+    # Creates a feature matrix with max power and zero column with one values
+    def get_complete_feature_mat(self, data, max_power):
+        # Create powers array
+        powers = [i for i in range(1, max_power+1)]
+        
+        # Create feature matrix
+        mat = self.create_feature_matrix(data, powers)
+        
+        # Add constant column to the left
+        # https://stackoverflow.com/questions/18674064/how-do-i-insert-a-column-at-a-specific-column-index-in-pandas
+        mat.insert(loc=0, column=0, value=1)
+        
+        return mat
+
+
+    def get_pred_v2(self, loc, col, days=30):
+
+        loc_data = self.data[loc == self.data["location"]].sort_values("date", ascending=True)
+
+        date_ind = pd.DataFrame(
+            dict(
+                total_cases=loc_data[col].values),
+                index=loc_data["date"]
+        )
+
+        date_ind = date_ind.reindex(date_ind.index.append(date_ind.index + pd.DateOffset(days=days)))
+                
+        tmp_date = date_ind.index
+        date_ind = date_ind.reset_index().drop("date", 1)
+
+        date_ind_ex = date_ind.astype(float)
+        date_ind_ex = date_ind_ex.dropna()
+
+        train_data = date_ind_ex.sample(frac=0.8, random_state=12)
+        valid_data = date_ind_ex.drop(train_data.index)
+
+
+        best_rss = math.inf
+        best_max_power = None
+        poly_weights = None
+        best_model = None
+        for max_power in range(1, 20):
+            feature_matrix_train = self.get_complete_feature_mat(train_data.index, max_power)
+            
+            # Create model and fit data to it
+            regression_model = LinearRegression(fit_intercept=False).fit(feature_matrix_train, train_data[col])
+            
+            # Get predictions
+            feature_matrix_valid = self.get_complete_feature_mat(valid_data.index, max_power)
+            predictions = regression_model.predict(feature_matrix_valid)
+            
+            # Find rss value
+            rss_value = self.rss(valid_data[col], predictions)
+            
+            # Save best values if the model scores better than the last
+            if best_rss > rss_value:
+                best_rss = rss_value
+                best_max_power = max_power
+                poly_weights = regression_model.coef_
+                best_model = regression_model
+            
+        # Recreate the model
+        feature_matrix_test = self.get_complete_feature_mat(date_ind.index, best_max_power)
+        predictions = best_model.predict(feature_matrix_test)
+        print(pd.DataFrame(predictions, index=tmp_date))
+
+        result = pd.DataFrame(predictions, index=tmp_date).tail(days)
+        result[0 > result[0]] = 0
+
+        return result
 
         
         
