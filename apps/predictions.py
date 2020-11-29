@@ -37,7 +37,7 @@ layout = html.Div([
                                                         dcc.Input(
                                                                 id='pred:days',
                                                                 type="number",
-                                                                value=30)
+                                                                value=30*6)
                                                 ])
                                         ]),
                                         dcc.Graph(id='pred:trend')
@@ -91,13 +91,21 @@ def pred_table(value):
         dash.dependencies.Input('pred:column_dropdown', 'value'),
         dash.dependencies.Input('pred:days', 'value'))
 def pred_trend(loc, col, days):
-        data = co_da.get_pred(loc, col, days=days)
+        og = co_da.get_location(loc)
+        pred = co_da.get_pred(loc, col, days=days)
 
-        fig = go.Figure(
+
+        fig = go.Figure([
                 dict(
-                        x=data.index,
-                        y=data[col].values
-                )
-        )
+                        name="Prediction",
+                        x=pred.index,
+                        y=pred[col].values
+                ),
+                dict(
+                        name="Original",
+                        x=og["date"],
+                        y=og[col].values
+                ),
+        ])
 
         return fig

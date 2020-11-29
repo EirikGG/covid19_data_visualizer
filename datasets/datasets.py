@@ -3,7 +3,7 @@ import json, copy
 import pandas as pd
 import numpy as np
 
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LinearRegression
 from scipy.optimize import curve_fit
 
 
@@ -154,30 +154,29 @@ class Covid_Data(Data_Handler):
         loc_data = self.data[loc == self.data["location"]].sort_values("date", ascending=True)
 
         date_ind = pd.DataFrame(
-            dict(total_cases=loc_data[col].values),
-            index=loc_data["date"]
+            dict(
+                total_cases=loc_data[col].values),
+                index=loc_data["date"]
         )
 
         date_ind = date_ind.reindex(date_ind.index.append(date_ind.index + pd.DateOffset(days=days)))
-        
+                
         tmp_date = date_ind.index
         date_ind = date_ind.reset_index().drop("date", 1)
+        result = date_ind
 
         date_ind_ex = date_ind.astype(float)
-        result = date_ind_ex
-        date_ind_ex = date_ind_ex.interpolate(method='values').ffill().bfill()
+        date_ind_ex = date_ind_ex.dropna()
         
-        def func1(x, a, b, c, d, e, f, g, h, i):
-            return a * (x ** 8) + b * (x ** 7) + c * (x ** 6) + d * (x ** 5) + e * (x ** 4) + f * (x ** 3) + g * (x ** 2) + h * x + i
+        
+        def func(x, a, b, c, d):
+            return a * (x ** 3) + b * (x ** 2) + c * x + d
 
-        def func(x, a, b, c, d, e, f, g, h, i, j, k, l):
-            return a * (x ** 12) + b * (x ** 11) + c * (x ** 10) + d * (x ** 9) + e * (x ** 8) + f * (x ** 7) + g * (x ** 6) + h * (x ** 5) + i * (x ** 4) + j * (x ** 3) + k * (x ** 2) + l * x
-        
         params = curve_fit(
             func,
             date_ind_ex.index.astype(float).values,
             date_ind_ex[col].values,
-            (0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+            [3 for _ in range(4)]
         )
 
         x = result[pd.isnull(result[col])].index.astype(float).values
@@ -185,7 +184,8 @@ class Covid_Data(Data_Handler):
 
         result.index = tmp_date
 
-        return result
+        return result.tail(days)
+
         
         
 class Tmp_Data(Data_Handler):
@@ -238,13 +238,20 @@ if __name__ == "__main__":
     c = Covid_Data()
     t = Tmp_Data()
     
-    pred = c.get_pred("Norway", "total_cases")
+    pred = c.get_pred("Norway", "total_cases", 30)
     
     print(pred.head())
     print(pred.tail())
-    '''
-    test = pd.DataFrame(dict(x1 = [1, 2, 3], x2 = [4, 5, 6]), index = pd.to_datetime(["27-11-2013", "28-11-2013", "29-11-2013"]))
+    
+    test = pd.DataFrame(dict(x1 = [1, 2, 3], x2 = [4, 5, 6]), index = pd.to_datetime(["27-11-2013", "21-11-2013", "29-11-2013"]))
     print(test)
-    test = test.reindex(test.index.append(test.index + pd.DateOffset(days=3)))
+
+    to_add = pd.date_range(start=test.index.max(), end=test.index.max() + pd.DateOffset(days=3), periods=3)
+
+    test = test.reindex(test.index.append(to_add))
+
+    #test = test.reindex(test.index.append(test.index + pd.DateOffset(days=3)))
+    
+    #idx = pd.date_range(test.index[-1], periods=4, freq='1d')[1:]
+        
     print(test)
-    '''
