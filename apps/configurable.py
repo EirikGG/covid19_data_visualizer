@@ -1,4 +1,4 @@
-import dash, time
+import dash, time, json
 
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 import pandas as pd
 
 from app import app
-from app import co_da
+from app import co_da, t_da
 
 from apps.tools import format_array, format_col
 
@@ -64,7 +64,7 @@ layout = html.Div([
                                                 dbc.Col([
                                                         html.H6("Column:"),
                                                         dcc.Dropdown(id='conf:filter_col_dropdown', 
-                                                                options=format_array(co_da.get_cols()),
+                                                                options=format_array(json.load(open("config/dataset.json"))["regression"]["features"]),
                                                                 value="population")
                                                 ]),
                                                 dbc.Col([
@@ -183,6 +183,10 @@ def conf_trend(locations, col):
         dash.dependencies.Input('conf:filter_value', 'value'))
 def conf_filtered(col, operator, value):
         '''Filters location and returns a table of the locations'''
+        
+        tmp_feature_name = "average_temperature"
+        if not tmp_feature_name in co_da.get_data():
+                co_da.add_tmp(tmp_feature_name, t_da.get_avg)
         data = co_da.get_filtered_data_loc(col, operator, value)
         
         tab = go.Table(

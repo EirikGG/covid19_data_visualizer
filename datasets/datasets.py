@@ -263,7 +263,6 @@ class Covid_Data(Data_Handler):
         # Recreate the model
         feature_matrix_test = self.get_complete_feature_mat(date_ind.index, best_max_power)
         predictions = best_model.predict(feature_matrix_test)
-        print(pd.DataFrame(predictions, index=tmp_date))
 
         result = pd.DataFrame(predictions, index=tmp_date).tail(days)
         result[0 > result[0]] = 0
