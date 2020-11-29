@@ -5,7 +5,7 @@ import numpy as np
 
 from sklearn import preprocessing
 
-from datasets.datasets import Covid_Data, Tmp_Data
+from datasets.datasets import Covid_Data, Tmp_Data, Travel_Data
 
 
 
@@ -24,3 +24,4 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
 # Importing backends
 co_da = Covid_Data()    # Covid data
 t_da = Tmp_Data()       # Temperature data
+tr_da = Travel_Data()   # Travel data

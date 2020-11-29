@@ -271,8 +271,8 @@ class Covid_Data(Data_Handler):
         
         
 class Tmp_Data(Data_Handler):
-    '''Handels temperature data from Kaggle
-    https://www.kaggle.com/ksudhir/weather-data-countries-covid19'''
+    '''Handels temperature data from Our world in data
+    https://ourworldindata.org/grapher/international-travel-covid?stackMode=absolute&time=2020-11-28&region=World'''
 
     def __init__(self, url_key="tmp"):
         '''Poulates class fields with temperature data'''
@@ -316,24 +316,32 @@ class Tmp_Data(Data_Handler):
         else:
             return np.NaN
 
+class Travel_Data(Data_Handler):
+    '''Handels temperature data from Kaggle
+    https://www.kaggle.com/ksudhir/weather-data-countries-covid19'''
+
+    def __init__(self, url_key="travel"):
+        '''Poulates class fields with temperature data'''
+        super().__init__(url_key)
+
+    def get_loc(self, loc):
+        '''Returns location'''
+        loc = self.data[loc == self.data["Entity"]]#.groupby("international_travel_controls")
+        groups = loc.groupby([(loc["international_travel_controls"] != loc["international_travel_controls"].shift()).cumsum()])
+        results = []
+        for i, group in groups:
+            results.append(
+                dict(
+                    name = group["international_travel_controls"].values[0],
+                    max=group["Date"].max(),
+                    min=group["Date"].min()
+                )
+            )
+        return results
+
 if __name__ == "__main__":
     c = Covid_Data()
     t = Tmp_Data()
-    
-    pred = c.get_pred_v2("Norway", "total_deaths", 30)
-    
-    print(pred.head())
-    print(pred.tail())
-    
-    test = pd.DataFrame(dict(x1 = [1, 2, 3], x2 = [4, 5, 6]), index = pd.to_datetime(["27-11-2013", "21-11-2013", "29-11-2013"]))
-    print(test)
+    tr = Travel_Data()
 
-    to_add = pd.date_range(start=test.index.max(), end=test.index.max() + pd.DateOffset(days=3), periods=3)
-
-    test = test.reindex(test.index.append(to_add))
-
-    #test = test.reindex(test.index.append(test.index + pd.DateOffset(days=3)))
-    
-    #idx = pd.date_range(test.index[-1], periods=4, freq='1d')[1:]
-        
-    print(test)
+    print(tr.get_loc("Norway"))

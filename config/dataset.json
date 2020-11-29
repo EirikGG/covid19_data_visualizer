@@ -7,6 +7,10 @@
 
         "tmp": [
             {"path": "datasets/weather_data_countries_covid19.csv", "description": "local file"}
+        ],
+
+        "travel": [
+            {"path": "datasets/international-travel-covid.csv", "description": "local file"}
         ]
     },
     "regression" : {

@@ -8,11 +8,10 @@ import pandas as pd
 import numpy as np
 
 from app import app
-from app import co_da, t_da
+from app import co_da, t_da, tr_da
 
 from apps.tools import format_array, format_col, get_common, format_numbers
 
-width = 10
 
 layout = html.Div([
         dbc.Row([
@@ -119,6 +118,7 @@ def main_locations(value):
         
         full_co_name = "Total cases. Selected country: {}".format(lo_da["location"].values[0])
 
+
         total_cases = go.Figure(
                 dict(
                         name=selected_country, 
@@ -128,6 +128,7 @@ def main_locations(value):
                                         title=format_col("Total cases"))
                                 )
 
+                
         total_deaths = go.Figure(
                 dict(
                         name=selected_country,
@@ -150,6 +151,7 @@ def main_locations(value):
                         title=format_col("Total tests"))
                 )
 
+                
         return total_cases, total_deaths, total_tests, full_co_name
 
 @app.callback(
