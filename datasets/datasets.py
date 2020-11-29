@@ -4,6 +4,9 @@ import pandas as pd
 import numpy as np
 
 from sklearn.linear_model import Lasso
+from scipy.optimize import curve_fit
+
+
 
 class Data_Handler(object):
     paths       = None          # Paths and urls to find datasets
@@ -105,7 +108,7 @@ class Covid_Data(Data_Handler):
 
         features.remove(feature)
         
-        data_dropna = self.data.fillna(self.data.mean(numeric_only=True))
+        data_dropna = self.data.fillna(0)
 
         lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])
@@ -134,6 +137,52 @@ class Covid_Data(Data_Handler):
 
         return self.data
 
+    def get_pred(self, loc, col, days=1):
+        '''Returns extrapolated predictions for a single location'''
+        loc_data = self.data[loc == self.data["location"]].sort_values("date", ascending=True)
+
+        date_ind = pd.DataFrame(
+            dict(total_cases=loc_data["total_cases"].values),
+            index=loc_data["date"]
+        )
+
+        date_ind_ex = date_ind.reindex(date_ind.index.append(date_ind.index + pd.DateOffset(days=days)))
+        date_ind_ex = date_ind_ex.fillna(0)
+
+        tmp_date = date_ind_ex.index
+        date_ind_ex = date_ind_ex.reset_index()
+        
+        x = date_ind_ex.index.astype(float).values
+        y = date_ind_ex["total_cases"].values
+
+        def func(x, a, b, c, d):
+            return a * (x ** 3) + b * (x ** 2) + c * x + d
+
+        params = curve_fit(
+            func,
+            x,
+            y
+        )
+
+        x = date_ind_ex[pd.isnull(date_ind_ex["total_cases"])].index.astype(float).values
+        date_ind_ex["total_cases"][x] = func(x, params["total_cases"])
+
+        date_ind_ex.index = tmp_date
+        return date_ind_ex
+
+    def get_filtered_data_loc(self, col, operator, value):
+        '''Filters data and returns locations'''
+        data = None
+        if "equals" == operator:
+            data = self.data[value == self.data[col]]
+        elif "greater" == operator:
+            data = self.data[value <= self.data[col]]
+        elif "less" == operator:
+            data = self.data[value >= self.data[col]]
+
+        return data["location"].unique()
+        
+        
 class Tmp_Data(Data_Handler):
     '''Handels temperature data from Kaggle
     https://www.kaggle.com/ksudhir/weather-data-countries-covid19'''
@@ -179,16 +228,18 @@ class Tmp_Data(Data_Handler):
             return w_dat["avg"].mean()
         else:
             return np.NaN
-        
-            
-
- 
-
 
 if __name__ == "__main__":
     c = Covid_Data()
     t = Tmp_Data()
     
-    new = c.add_tmp("tmp", t.get_avg)
-
-    print(new["Norway" == new["location"]])
+    pred = c.get_pred("Norway", "total_cases")
+    
+    print(pred.head())
+    print(pred.tail())
+    '''
+    test = pd.DataFrame(dict(x1 = [1, 2, 3], x2 = [4, 5, 6]), index = pd.to_datetime(["27-11-2013", "28-11-2013", "29-11-2013"]))
+    print(test)
+    test = test.reindex(test.index.append(test.index + pd.DateOffset(days=3)))
+    print(test)
+    '''

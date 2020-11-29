@@ -15,6 +15,32 @@ from apps.tools import format_array, get_common, format_cols
 layout = html.Div([
         dbc.Row([
                 dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Prediction:"),
+                                        html.Br(),
+                                        dbc.Row([
+                                                dbc.Col([
+                                                        html.H6("Country:"),
+                                                        dcc.Dropdown(id='pred:column_dropdown', 
+                                                                options=format_array(co_da.get_locations()), 
+                                                                value='Norway'),
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Column:"),
+                                                        dcc.Dropdown(id='pred:column_dropdown', 
+                                                                options=format_array(json.load(open("config/dataset.json"))["pred"]["cols"]),
+                                                                value="total_cases")
+                                                ]),
+                                        ]),
+                                        dcc.Graph(id='pred:trend')
+                                ])
+                        ), width={"size": 10, "offset": 1},
+                ),
+        ]),
+        html.Br(),
+        dbc.Row([
+                dbc.Col(
                         html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
@@ -30,7 +56,8 @@ layout = html.Div([
                                 )
                         ]), width={"size": 10, "offset": 0},
                 )
-        ], justify='center'), 
+        ], justify='center'),
+
 ])
 
 @app.callback(
@@ -49,3 +76,10 @@ def pred_table(value):
         )
         
         return go.Figure(tab)
+
+
+@app.callback(
+        dash.dependencies.Output('pred:column_dropdown', 'figure'),
+        dash.dependencies.Input('pred:trend', 'value'))
+def pred_trend(value):
+        pass

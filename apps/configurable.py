@@ -9,7 +9,7 @@ import pandas as pd
 from app import app
 from app import co_da
 
-from apps.tools import format_array, toUnix, toDT, format_marks
+from apps.tools import format_array, format_col
 
 
 #####################  TMP Page  #######################
@@ -41,17 +41,55 @@ layout = html.Div([
                                                 ]),
                                         ]),
                                         html.Br(),
-                                        html.H6("Date", id="conf:date_label"),
-                                        dcc.Slider(
-                                                id="conf:slider",
-                                                updatemode="drag",
-                                                min=toUnix(co_da.get_dates().min()),
-                                                max=toUnix(co_da.get_dates().max()),
-                                                value=toUnix(co_da.get_dates().max()),
+                                        html.H6("Date"),
+                                        dcc.DatePickerSingle(
+                                                id='conf:date',
+                                                min_date_allowed=co_da.get_dates().min(),
+                                                max_date_allowed=co_da.get_dates().max(),
+                                                date=co_da.get_dates().max()
                                         ),
                                         dcc.Graph(id='conf:trend_graph'),
                                 ])
-                        ), width={"size": 10, "offset": 1},
+                        ), width={"size": 5, "offset": 1},
+                ),
+                dbc.Col(
+                        dbc.Card(
+                                dbc.CardBody([
+                                        html.H3("Filter location:"),
+                                        html.Br(),
+                                        html.Br(),
+                                        html.Br(),
+                                        html.Br(),
+                                        dbc.Row([
+                                                dbc.Col([
+                                                        html.H6("Column:"),
+                                                        dcc.Dropdown(id='conf:filter_col_dropdown', 
+                                                                options=format_array(co_da.get_cols()),
+                                                                value="population")
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Operator:"),
+                                                        dcc.Dropdown(id='conf:filter_operator_dropdown', 
+                                                                options=[
+                                                                        {'label': "Equals", 'value':"equals"},
+                                                                        {'label': "Greater than", 'value':"greater"},
+                                                                        {'label': "Less than", 'value':"less"},
+                                                                ],
+                                                                value="less")                                                                                        
+                                                ]),
+                                                dbc.Col([
+                                                        html.H6("Value:"),
+                                                        dcc.Input(
+                                                                id='conf:filter_value',
+                                                                type="number",
+                                                                value=10000)
+                                                ])
+                                        ]),
+                                        html.Br(),
+                                        html.Br(),
+                                        dcc.Graph(id='conf:filter_tables'),
+                                ])
+                        ), width={"size": 5, "offset": 0},
                 )
         ], align='center'),
         html.Br(),
@@ -86,38 +124,46 @@ layout = html.Div([
         
 @app.callback(
         dash.dependencies.Output('conf:trend_graph', 'figure'),
-        dash.dependencies.Output('conf:date_label', 'children'),
         
         dash.dependencies.Input('conf:trend_dropdown_x', 'value'),
         dash.dependencies.Input('conf:trend_dropdown_y', 'value'),
         dash.dependencies.Input('conf:trend_dropdown_z', 'value'),
-        dash.dependencies.Input('conf:slider', 'value'))
+        dash.dependencies.Input('conf:date', 'date'))
 def update_conf_scat(x_axis, y_axis, z_axis, date):
         '''Updates the map with a new x and y axis'''
-        # Convert date from unix time to datetime and use to filter date
-        date = toDT(date)
         data = co_da.get_date(date)
         data = data["World" != data["location"]]
 
         fig = go.Scatter()
 
-        # Creates a figure with custom x and y axis, returns empty figure if one axis is deselected
         if (x_axis and y_axis and not z_axis):
-                fig = go.Scatter(x=data[x_axis], 
+                fig = go.Figure(go.Scatter(x=data[x_axis], 
                                 y=data[y_axis],
                                 mode="markers",
                                 text=data["location"],
-                                hoverinfo="text")
+                                hoverinfo="text")).update_layout(
+                                       xaxis=dict(
+                                                title=format_col(x_axis)
+                                        ),
+                                        yaxis=dict(
+                                                title=format_col(y_axis)
+                                        ) 
+                                )
         elif (x_axis and y_axis and z_axis):
-                fig = go.Scatter3d(x=data[x_axis], 
+                fig = go.Figure(go.Scatter3d(x=data[x_axis], 
                                 y=data[y_axis],
                                 z=data[z_axis],
                                 mode="markers",
                                 text=data["location"],
-                                hoverinfo="text")
+                                hoverinfo="text")).update_layout(
+                                scene = dict(
+                                        xaxis_title=format_col(x_axis),
+                                        yaxis_title=format_col(y_axis),
+                                        zaxis_title=format_col(z_axis))
+                                )
 
-        return go.Figure(fig), "Date: {}".format(date)
-        
+        return fig
+         
 @app.callback(
         dash.dependencies.Output('conf:trend', 'figure'),
         dash.dependencies.Input('conf:trend_pr_m_dropdown', 'value'),
@@ -129,3 +175,18 @@ def conf_trend(locations, col):
                 lo_da = co_da.get_location(location)
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da[col]))
         return go.Figure(data = data)
+         
+@app.callback(
+        dash.dependencies.Output('conf:filter_tables', 'figure'),
+        dash.dependencies.Input('conf:filter_col_dropdown', 'value'),
+        dash.dependencies.Input('conf:filter_operator_dropdown', 'value'),
+        dash.dependencies.Input('conf:filter_value', 'value'))
+def conf_filtered(col, operator, value):
+        '''Filters location and returns a table of the locations'''
+        data = co_da.get_filtered_data_loc(col, operator, value)
+        
+        tab = go.Table(
+                cells=dict(values=[data]),
+        )
+        
+        return go.Figure(tab) if col and operator and value else go.Figure()

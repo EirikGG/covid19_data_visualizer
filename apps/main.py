@@ -119,9 +119,36 @@ def main_locations(value):
         
         full_co_name = "Selected country: {}".format(lo_da["location"].values[0])
 
-        total_cases = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_cases"]))
-        total_deaths = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_deaths"]))
-        total_tests = go.Figure(data = dict(name=selected_country, x=lo_da["date"], y=lo_da["total_tests"]))
+        total_cases = go.Figure(
+                dict(
+                        name=selected_country, 
+                        x=lo_da["date"], 
+                        y=lo_da["total_cases"])).update_layout(
+                                yaxis=dict(
+                                        title=format_col("Total cases"))
+                                )
+
+        total_deaths = go.Figure(
+                dict(
+                        name=selected_country,
+                        x=lo_da["date"],
+                        y=lo_da["total_deaths"]
+                )
+        ).update_layout(
+                yaxis=dict(
+                        title=format_col("Total deaths"))
+                )
+
+        total_tests = go.Figure(
+                dict(
+                        name=selected_country,
+                        x=lo_da["date"],
+                        y=lo_da["total_tests"]
+                )
+        ).update_layout(
+                yaxis=dict(
+                        title=format_col("Total tests"))
+                )
 
         return total_cases, total_deaths, total_tests, full_co_name
 

@@ -21,5 +21,10 @@
         "cols" : ["positive_rate", "gdp_per_capita", "extreme_poverty", "cardiovasc_death_rate", "diabetes_prevalence", 
             "female_smokers", "male_smokers", "handwashing_facilities", "life_expectancy", "human_development_index", "total_cases", "total_deaths"
         ]
+    },
+    "pred" : {
+        "cols" : [
+            "total_cases", "total_deaths"
+        ]
     }
 }
