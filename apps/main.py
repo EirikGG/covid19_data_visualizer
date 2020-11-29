@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import numpy as np
 
@@ -129,6 +130,16 @@ def main_locations(value):
                                 )
 
                 
+        tr_data = tr_da.get_loc(co_da.get_loc_from_iso(selected_country))
+
+        for data in tr_data:
+                print(data)
+                total_cases.add_vrect(
+                        x0=pd.to_datetime(data["min"]), x1=pd.to_datetime(data["max"]), 
+                        annotation_text="{}".format(data["name"]), annotation_position="top left",
+                        fillcolor="green", opacity=0.5, line_width=1, row=None, col=None
+                )
+
         total_deaths = go.Figure(
                 dict(
                         name=selected_country,
