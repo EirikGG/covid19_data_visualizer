@@ -117,7 +117,7 @@ def main_locations(value):
 
         lo_da = co_da.get_iso(selected_country)
         
-        full_co_name = "Selected country: {}".format(lo_da["location"].values[0])
+        full_co_name = "Total cases. Selected country: {}".format(lo_da["location"].values[0])
 
         total_cases = go.Figure(
                 dict(

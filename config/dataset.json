@@ -24,7 +24,7 @@
     },
     "pred" : {
         "cols" : [
-            "total_cases", "total_deaths"
+            "total_cases"
         ]
     }
 }

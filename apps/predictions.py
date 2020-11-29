@@ -91,6 +91,7 @@ def pred_table(value):
         dash.dependencies.Input('pred:column_dropdown', 'value'),
         dash.dependencies.Input('pred:days', 'value'))
 def pred_trend(loc, col, days):
+        print(loc, col, days)
         og = co_da.get_location(loc)
         pred = co_da.get_pred_v2(loc, col, days=days)
 

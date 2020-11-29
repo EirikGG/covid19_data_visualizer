@@ -155,7 +155,7 @@ class Covid_Data(Data_Handler):
 
         date_ind = pd.DataFrame(
             dict(
-                total_cases=loc_data[col].values),
+                col=loc_data[col].values),
                 index=loc_data["date"]
         )
 
@@ -220,7 +220,7 @@ class Covid_Data(Data_Handler):
 
         date_ind = pd.DataFrame(
             dict(
-                total_cases=loc_data[col].values),
+                data=loc_data[col].values),
                 index=loc_data["date"]
         )
 
@@ -235,7 +235,6 @@ class Covid_Data(Data_Handler):
         train_data = date_ind_ex.sample(frac=0.8, random_state=12)
         valid_data = date_ind_ex.drop(train_data.index)
 
-
         best_rss = math.inf
         best_max_power = None
         poly_weights = None
@@ -244,14 +243,14 @@ class Covid_Data(Data_Handler):
             feature_matrix_train = self.get_complete_feature_mat(train_data.index, max_power)
             
             # Create model and fit data to it
-            regression_model = LinearRegression(fit_intercept=False).fit(feature_matrix_train, train_data[col])
+            regression_model = LinearRegression(fit_intercept=False).fit(feature_matrix_train, train_data["data"])
             
             # Get predictions
             feature_matrix_valid = self.get_complete_feature_mat(valid_data.index, max_power)
             predictions = regression_model.predict(feature_matrix_valid)
             
             # Find rss value
-            rss_value = self.rss(valid_data[col], predictions)
+            rss_value = self.rss(valid_data["data"], predictions)
             
             # Save best values if the model scores better than the last
             if best_rss > rss_value:
@@ -321,7 +320,7 @@ if __name__ == "__main__":
     c = Covid_Data()
     t = Tmp_Data()
     
-    pred = c.get_pred("Norway", "total_cases", 30)
+    pred = c.get_pred_v2("Norway", "total_deaths", 30)
     
     print(pred.head())
     print(pred.tail())
