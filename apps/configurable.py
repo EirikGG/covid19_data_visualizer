@@ -57,9 +57,6 @@ layout = html.Div([
                                 dbc.CardBody([
                                         html.H3("Filter location:"),
                                         html.Br(),
-                                        html.Br(),
-                                        html.Br(),
-                                        html.Br(),
                                         dbc.Row([
                                                 dbc.Col([
                                                         html.H6("Column:"),
@@ -85,6 +82,9 @@ layout = html.Div([
                                                                 value=10000)
                                                 ])
                                         ]),
+                                        html.Br(),
+                                        html.Br(),
+                                        html.Br(),
                                         html.Br(),
                                         html.Br(),
                                         dcc.Graph(id='conf:filter_tables'),
