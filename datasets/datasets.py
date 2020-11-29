@@ -106,9 +106,9 @@ class Covid_Data(Data_Handler):
         with open("config/dataset.json", "r") as f:
                 features = json.load(f)["regression"]["features"]
 
+        data_dropna = self.data[features].astype(float)
+        data_dropna = data_dropna.interpolate(method='nearest', axis=0).ffill().bfill()
         features.remove(feature)
-        
-        data_dropna = self.data.fillna(0)
 
         lasso_model = Lasso(alpha=.1, normalize=True, max_iter=100000, positive=True)
         lasso_model.fit(data_dropna[features], data_dropna[feature])
@@ -137,39 +137,6 @@ class Covid_Data(Data_Handler):
 
         return self.data
 
-    def get_pred(self, loc, col, days=1):
-        '''Returns extrapolated predictions for a single location'''
-        loc_data = self.data[loc == self.data["location"]].sort_values("date", ascending=True)
-
-        date_ind = pd.DataFrame(
-            dict(total_cases=loc_data["total_cases"].values),
-            index=loc_data["date"]
-        )
-
-        date_ind_ex = date_ind.reindex(date_ind.index.append(date_ind.index + pd.DateOffset(days=days)))
-        date_ind_ex = date_ind_ex.fillna(0)
-
-        tmp_date = date_ind_ex.index
-        date_ind_ex = date_ind_ex.reset_index()
-        
-        x = date_ind_ex.index.astype(float).values
-        y = date_ind_ex["total_cases"].values
-
-        def func(x, a, b, c, d):
-            return a * (x ** 3) + b * (x ** 2) + c * x + d
-
-        params = curve_fit(
-            func,
-            x,
-            y
-        )
-
-        x = date_ind_ex[pd.isnull(date_ind_ex["total_cases"])].index.astype(float).values
-        date_ind_ex["total_cases"][x] = func(x, params["total_cases"])
-
-        date_ind_ex.index = tmp_date
-        return date_ind_ex
-
     def get_filtered_data_loc(self, col, operator, value):
         '''Filters data and returns locations'''
         data = None
@@ -181,6 +148,44 @@ class Covid_Data(Data_Handler):
             data = self.data[value >= self.data[col]]
 
         return data["location"].unique()
+
+    def get_pred(self, loc, col, days=30):
+        '''Returns extrapolated predictions for a single location'''
+        loc_data = self.data[loc == self.data["location"]].sort_values("date", ascending=True)
+
+        date_ind = pd.DataFrame(
+            dict(total_cases=loc_data[col].values),
+            index=loc_data["date"]
+        )
+
+        date_ind = date_ind.reindex(date_ind.index.append(date_ind.index + pd.DateOffset(days=days)))
+        
+        tmp_date = date_ind.index
+        date_ind = date_ind.reset_index().drop("date", 1)
+
+        date_ind_ex = date_ind.astype(float)
+        result = date_ind_ex
+        date_ind_ex = date_ind_ex.interpolate(method='values').ffill().bfill()
+        
+        def func1(x, a, b, c, d, e, f, g, h, i):
+            return a * (x ** 8) + b * (x ** 7) + c * (x ** 6) + d * (x ** 5) + e * (x ** 4) + f * (x ** 3) + g * (x ** 2) + h * x + i
+
+        def func(x, a, b, c, d, e, f, g, h, i, j, k, l):
+            return a * (x ** 12) + b * (x ** 11) + c * (x ** 10) + d * (x ** 9) + e * (x ** 8) + f * (x ** 7) + g * (x ** 6) + h * (x ** 5) + i * (x ** 4) + j * (x ** 3) + k * (x ** 2) + l * x
+        
+        params = curve_fit(
+            func,
+            date_ind_ex.index.astype(float).values,
+            date_ind_ex[col].values,
+            (0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+        )
+
+        x = result[pd.isnull(result[col])].index.astype(float).values
+        result[col][x] = func(x, *params[0])
+
+        result.index = tmp_date
+
+        return result
         
         
 class Tmp_Data(Data_Handler):

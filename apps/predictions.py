@@ -22,7 +22,7 @@ layout = html.Div([
                                         dbc.Row([
                                                 dbc.Col([
                                                         html.H6("Country:"),
-                                                        dcc.Dropdown(id='pred:column_dropdown', 
+                                                        dcc.Dropdown(id='pred:country_dropdown', 
                                                                 options=format_array(co_da.get_locations()), 
                                                                 value='Norway'),
                                                 ]),
@@ -32,6 +32,13 @@ layout = html.Div([
                                                                 options=format_array(json.load(open("config/dataset.json"))["pred"]["cols"]),
                                                                 value="total_cases")
                                                 ]),
+                                                dbc.Col([
+                                                        html.H6("Days:"),
+                                                        dcc.Input(
+                                                                id='pred:days',
+                                                                type="number",
+                                                                value=30)
+                                                ])
                                         ]),
                                         dcc.Graph(id='pred:trend')
                                 ])
@@ -79,7 +86,18 @@ def pred_table(value):
 
 
 @app.callback(
-        dash.dependencies.Output('pred:column_dropdown', 'figure'),
-        dash.dependencies.Input('pred:trend', 'value'))
-def pred_trend(value):
-        pass
+        dash.dependencies.Output('pred:trend', 'figure'),
+        dash.dependencies.Input('pred:country_dropdown', 'value'),
+        dash.dependencies.Input('pred:column_dropdown', 'value'),
+        dash.dependencies.Input('pred:days', 'value'))
+def pred_trend(loc, col, days):
+        data = co_da.get_pred(loc, col, days=days)
+
+        fig = go.Figure(
+                dict(
+                        x=data.index,
+                        y=data[col].values
+                )
+        )
+
+        return fig
