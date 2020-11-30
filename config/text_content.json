@@ -21,6 +21,6 @@
     ],
     "warnings":{
         "dataset": "Loaded dataset was last updated 19.10.2020",
-        "predictions": "Predictions may be inaccurate"
+        "predictions": "Predictions may be inaccurate if the location is lacking historical data"
     }
 }

@@ -32,7 +32,8 @@ layout = html.Div([
                 dbc.Col(html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
-                                                html.H3("Total cases"),
+                                                html.H4("Total cases"),
+                                                html.H3("Level of travel restrictions"),
                                                 dbc.Row([
                                                         dbc.Col([
                                                                 html.H6("L0: No measures"),

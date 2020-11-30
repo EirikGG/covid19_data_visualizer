@@ -4,10 +4,11 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 
 from app import app
-from app import co_da, t_da
+from app import co_da, t_da, tr_da
 
 from apps.tools import format_array, format_col
 
@@ -104,7 +105,7 @@ layout = html.Div([
                                                         html.H6("Country:"),
                                                         dcc.Dropdown(id='conf:trend_pr_m_dropdown', 
                                                                 options=format_array(co_da.get_locations()), 
-                                                                value=['Norway', 'Sweden', 'Denmark'], 
+                                                                value=['Norway'], 
                                                                 multi=True),
                                                 ]),
                                                 dbc.Col([
@@ -114,6 +115,8 @@ layout = html.Div([
                                                                 value="total_cases")                                                                                        
                                                 ]),
                                         ]),
+                                        html.Br(),
+                                        html.Div(id="conf:level_info"),
                                         dcc.Graph(id='conf:trend')
                                 ])
                         ), width={"size": 10, "offset": 1},
@@ -166,6 +169,7 @@ def update_conf_scat(x_axis, y_axis, z_axis, date):
          
 @app.callback(
         dash.dependencies.Output('conf:trend', 'figure'),
+        dash.dependencies.Output('conf:level_info', 'children'),
         dash.dependencies.Input('conf:trend_pr_m_dropdown', 'value'),
         dash.dependencies.Input('conf:column_dropdown', 'value'))
 def conf_trend(locations, col):
@@ -174,7 +178,63 @@ def conf_trend(locations, col):
         for location in (locations,) if str==type(locations) else locations:
                 lo_da = co_da.get_location(location)
                 data.append(dict(name=location, x=lo_da["date"], y=lo_da[col]))
-        return go.Figure(data = data)
+
+        fig = go.Figure(data = data)
+
+        
+        colors = {
+                0: 2,
+                1: 4,
+                2: 6,
+                3: 7,
+                4: 9
+        }
+        plasma = px.colors.sequential.thermal
+
+        text = ""
+
+        if 1 == len(locations):
+                tr_data = tr_da.get_loc(*locations)
+                shapes = []
+                for data in tr_data:
+                        shapes.append(dict(
+                                type="rect",
+                                xref="x",
+                                yref="paper",
+                                x0=data["min"],
+                                x1=data["max"],
+                                y0="0",
+                                y1="1",
+                                fillcolor=plasma[colors[data["name"]]],
+                                opacity=0.3,
+                                line_width=1,
+                                layer="below"
+                        ))
+                        fig.add_annotation(
+                                x = data["max"],
+                                y = 0,
+                                text="L{}".format(data["name"])
+                        )
+                fig.update_layout(shapes=shapes)
+                text = html.Div([
+                        html.H4("Level of travel restrictions"),
+                        dbc.Row([
+                                dbc.Col([
+                                        html.H6("L0: No measures"),
+                                        html.H6("L1: Screening"),
+                                        html.H6("L2: Quarantine arrivals from high-risk regions"),
+                                ]),
+                                dbc.Col([
+                                        html.H6("L3: Ban on high-risk regions"),
+                                        html.H6("L4: Total border closure"),
+                                ]), 
+                        ]),
+                ])
+
+        return fig, text
+                                                
+
+
          
 @app.callback(
         dash.dependencies.Output('conf:filter_tables', 'figure'),
