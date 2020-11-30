@@ -20,6 +20,10 @@ layout = html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3(id="main:header"),
+                                                html.Br(),
+                                                html.Br(),
+                                                html.Br(),
+                                                html.Br(),
                                                 dcc.Graph(id='main:map'),
                                         ])
                                 )
@@ -29,6 +33,18 @@ layout = html.Div([
                                 dbc.Card(
                                         dbc.CardBody([
                                                 html.H3("Total cases"),
+                                                dbc.Row([
+                                                        dbc.Col([
+                                                                html.H6("L0: No measures"),
+                                                                html.H6("L1: Screening"),
+                                                                html.H6("L2: Quarantine arrivals from high-risk regions"),
+                                                        ]),
+                                                        dbc.Col([
+                                                                html.H6("L3: Ban on high-risk regions"),
+                                                                html.H6("L4: Total border closure"),
+                                                        ]), 
+                                                ]),
+                                                
                                                 dcc.Graph(id='main:total_cases')
                                         ])
                                 )
@@ -132,13 +148,38 @@ def main_locations(value):
                 
         tr_data = tr_da.get_loc(co_da.get_loc_from_iso(selected_country))
 
+        colors = {
+                0: 2,
+                1: 4,
+                2: 6,
+                3: 7,
+                4: 9
+        }
+        plasma = px.colors.sequential.thermal
+
+        shapes = []
         for data in tr_data:
-                print(data)
-                total_cases.add_vrect(
-                        x0=pd.to_datetime(data["min"]), x1=pd.to_datetime(data["max"]), 
-                        annotation_text="{}".format(data["name"]), annotation_position="top left",
-                        fillcolor="green", opacity=0.5, line_width=1, row=None, col=None
+                shapes.append(dict(
+                        type="rect",
+                        xref="x",
+                        yref="paper",
+                        x0=data["min"],
+                        x1=data["max"],
+                        y0="0",
+                        y1="1",
+                        fillcolor=plasma[colors[data["name"]]],
+                        opacity=0.3,
+                        line_width=1,
+                        layer="below"
+                ))
+                total_cases.add_annotation(
+                        x = data["max"],
+                        y = 0,
+                        text="L{}".format(data["name"])
                 )
+        
+        total_cases.update_layout(shapes=shapes)
+
 
         total_deaths = go.Figure(
                 dict(
