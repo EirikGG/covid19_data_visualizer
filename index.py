@@ -71,4 +71,4 @@ def update_warnings(path):
 
 # Run webpage
 if __name__ == '__main__':
-        app.run_server(debug=True, use_reloader=True)
+        app.run_server(debug=False, use_reloader=False)
